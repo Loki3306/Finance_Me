@@ -18,7 +18,7 @@ export function NetWorthCard() {
         <div className="space-y-3">
           <div className="text-sm text-secondary-foreground/70">Total Net Worth</div>
           <div className="text-4xl font-extrabold tracking-tight md:text-5xl">
-            ${end.toLocaleString()}
+            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(end)}
           </div>
           <div className="flex items-center gap-2 text-sm">
             {up ? (
