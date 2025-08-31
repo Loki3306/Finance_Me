@@ -25,14 +25,24 @@ const txSchema = z.object({
 router.get("/", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
-  const { account, category, q, page = 1, limit = 50, from, to } = req.query as any;
+  const { account, accounts, category, categories, q, search, page = 1, limit = 50, from, to, startDate, endDate, type, sort } = req.query as any;
   const filter: any = { userId, isDeleted: false };
-  if (account) filter.accountId = account;
-  if (category) filter.category = category;
-  if (from || to) filter.date = { ...(from ? { $gte: new Date(from) } : {}), ...(to ? { $lte: new Date(to) } : {}) };
-  if (q) filter.$text = { $search: q };
+  const accList = (accounts || account || "").toString().split(",").filter(Boolean);
+  if (accList.length) filter.accountId = { $in: accList };
+  const catList = (categories || category || "").toString().split(",").filter(Boolean);
+  if (catList.length) filter.category = { $in: catList };
+  if (type) filter.type = type;
+  const fromVal = from || startDate; const toVal = to || endDate;
+  if (fromVal || toVal) filter.date = { ...(fromVal ? { $gte: new Date(fromVal) } : {}), ...(toVal ? { $lte: new Date(toVal) } : {}) };
+  const searchQ = search || q;
+  if (searchQ) filter.$or = [
+    { description: { $regex: searchQ, $options: "i" } },
+    { category: { $regex: searchQ, $options: "i" } },
+  ];
+  const sortMap: Record<string, any> = { date_desc: { date: -1 }, date_asc: { date: 1 }, amount_desc: { amount: -1 }, amount_asc: { amount: 1 } };
+  const sortBy = sortMap[sort as string] || { date: -1 };
   const docs = await Transaction.find(filter)
-    .sort({ date: -1 })
+    .sort(sortBy)
     .skip((Number(page) - 1) * Number(limit))
     .limit(Number(limit));
   res.json(docs);
@@ -92,6 +102,30 @@ router.delete("/:id", async (req, res) => {
   if (!doc) return res.status(404).json({ error: "Not found" });
   await recalcBalances(userId, [String(doc.accountId)]);
   res.json({ success: true });
+});
+
+router.delete("/bulk", async (req, res) => {
+  await connectDB();
+  const userId = getUserId(req);
+  const ids = (req.body?.ids || []) as string[];
+  if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ error: "ids required" });
+  await Transaction.updateMany({ _id: { $in: ids }, userId }, { $set: { isDeleted: true } });
+  res.json({ success: true });
+});
+
+router.get("/export", async (req, res) => {
+  await connectDB();
+  const userId = getUserId(req);
+  const { from, to } = req.query as any;
+  const filter: any = { userId, isDeleted: false };
+  if (from || to) filter.date = { ...(from ? { $gte: new Date(from) } : {}), ...(to ? { $lte: new Date(to) } : {}) };
+  const docs = await Transaction.find(filter).sort({ date: -1 });
+  const rows = ["date,type,category,amount,accountId,description"].concat(
+    docs.map((d) => `${d.date.toISOString()},${d.type},${(d.category||"").replace(/,/g," ")},${d.amount},${d.accountId},${(d.description||"").replace(/,/g," ")}`)
+  ).join("\n");
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename=transactions.csv`);
+  res.send(rows);
 });
 
 router.post("/bulk", async (req, res) => {
