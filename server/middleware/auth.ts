@@ -1,7 +1,11 @@
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import type { RequestHandler } from "express";
 
-export const clerk = clerkMiddleware();
+const hasClerkEnv = Boolean(process.env.CLERK_SECRET_KEY && (process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY));
+
+export const clerk: RequestHandler = hasClerkEnv
+  ? clerkMiddleware()
+  : (_req, _res, next) => next();
 
 export const requireAuth: RequestHandler = (req, res, next) => {
   const auth = getAuth(req);
