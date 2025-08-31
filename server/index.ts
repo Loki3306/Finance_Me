@@ -19,7 +19,9 @@ export function createServer() {
   app.use(cors({ origin, credentials: true }));
   app.use(express.json({ limit: "5mb" }));
   app.use(express.urlencoded({ extended: true }));
-  // Apply Clerk only to API routes to avoid interfering with Vite asset requests
+  // Webhook must be public (no auth)
+  app.use("/api/webhook", webhookRouter);
+  // Apply Clerk only to API routes (excluding webhook) to avoid interfering with Vite asset requests
   app.use("/api", clerk);
 
   // Health
