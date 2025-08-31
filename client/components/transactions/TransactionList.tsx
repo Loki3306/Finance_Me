@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatINR } from "@/lib/inr";
+import { apiFetch } from "@/lib/api";
 
 export function TransactionList() {
   const [q, setQ] = useState("");
@@ -10,7 +11,7 @@ export function TransactionList() {
   useEffect(() => { const t = setTimeout(() => setDebounced(q), 300); return () => clearTimeout(t); }, [q]);
 
   const { data = [], refetch, isFetching } = useQuery({ queryKey: ["tx", debounced], queryFn: async () => {
-    const res = await fetch(`/api/transactions${debounced?`?q=${encodeURIComponent(debounced)}`:""}`);
+    const res = await apiFetch(`/api/transactions${debounced?`?q=${encodeURIComponent(debounced)}`:""}`);
     if (!res.ok) throw new Error("Failed");
     return res.json();
   }});
