@@ -100,6 +100,7 @@ export function EnhancedTransactionList() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transactions are deleted
       setSelectedIds((prev) => prev.filter((id) => !prev.includes(id)));
     },
   });
@@ -178,6 +179,7 @@ export function EnhancedTransactionList() {
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transactions are created
     } catch (err) {
       console.error("Error duplicating transaction:", err);
     }
@@ -303,7 +305,10 @@ export function EnhancedTransactionList() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ["tx"] })}
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ["tx"] });
+              queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Also refresh budgets
+            }}
             disabled={isFetching}
           >
             <RefreshCw size={16} className={cn(isFetching && "animate-spin")} />

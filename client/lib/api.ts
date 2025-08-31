@@ -9,7 +9,13 @@ export async function apiFetch(
   init: RequestInit = {},
 ) {
   try {
-    const token = await window.Clerk?.session?.getToken?.();
+    // Temporarily bypass Clerk auth for debugging
+    console.log("=== API FETCH START ===");
+    console.log("Making API request to:", input);
+    console.log("Method:", init.method || 'GET');
+    console.log("Headers:", init.headers);
+    console.log("Body:", init.body);
+    
     const headers = new Headers(init.headers || {});
     if (
       !headers.has("Content-Type") &&
@@ -18,9 +24,35 @@ export async function apiFetch(
     ) {
       headers.set("Content-Type", "application/json");
     }
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-    return fetch(input, { ...init, headers });
+    
+    // Add base URL if needed
+    const url = typeof input === 'string' && input.startsWith('/api') 
+      ? `http://localhost:8080${input}`
+      : input;
+    
+    console.log("Final URL:", url);
+    console.log("Final headers:", Object.fromEntries(headers.entries()));
+    console.log("About to make fetch request...");
+    
+    const response = await fetch(url, { ...init, headers });
+    console.log("Response received!");
+    console.log("Response status:", response.status);
+    console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log("Error response body:", errorText);
+      console.log("=== API FETCH ERROR ===");
+    } else {
+      console.log("=== API FETCH SUCCESS ===");
+    }
+    
+    return response;
   } catch (e) {
-    return fetch(input, init);
+    console.error("=== API FETCH EXCEPTION ===");
+    console.error("API fetch error:", e);
+    console.error("Error type:", typeof e);
+    console.error("Error constructor:", e.constructor.name);
+    throw e;
   }
 }

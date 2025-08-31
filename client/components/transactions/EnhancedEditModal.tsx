@@ -263,6 +263,7 @@ export function EnhancedEditModal({ transaction, onClose, isOpen }: EnhancedEdit
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transactions are updated
 
       onClose();
     } catch (err: any) {
