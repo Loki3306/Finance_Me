@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountForm } from "./AccountForm";
 import { AccountCard } from "./AccountCard";
+import { apiFetch } from "@/lib/api";
 
 export function AccountGrid() {
   const qc = useQueryClient();
@@ -13,13 +14,13 @@ export function AccountGrid() {
 
   const { data: accounts = [], isLoading } = useQuery({ queryKey: ["accounts", type], queryFn: async () => {
     const qs = type !== "all" ? `?type=${type}` : "";
-    const res = await fetch(`/api/accounts${qs}`);
+    const res = await apiFetch(`/api/accounts${qs}`);
     if (!res.ok) throw new Error("Failed to load");
     return res.json();
   }});
 
   const del = useMutation({
-    mutationFn: async (id: string) => { const res = await fetch(`/api/accounts/${id}`, { method: "DELETE" }); if (!res.ok) throw new Error("Failed"); },
+    mutationFn: async (id: string) => { const res = await apiFetch(`/api/accounts/${id}`, { method: "DELETE" }); if (!res.ok) throw new Error("Failed"); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["accounts"] }),
   });
 
