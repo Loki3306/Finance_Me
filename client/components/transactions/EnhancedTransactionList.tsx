@@ -9,6 +9,7 @@ import { AdvancedFilterBar } from "./AdvancedFilterBar";
 import { TransactionCard } from "./TransactionCard";
 import { BulkActionBar } from "./BulkActionBar";
 import { Grid, List, RefreshCw, ArrowUp, Loader2, Package } from "lucide-react";
+import { EnhancedEditModal } from "./EnhancedEditModal";
 
 interface FilterState {
   search: string;
@@ -41,6 +42,8 @@ export function EnhancedTransactionList() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [statsPeriod, setStatsPeriod] = useState("today");
+  const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const limit = 20;
@@ -145,13 +148,39 @@ export function EnhancedTransactionList() {
   };
 
   const handleEditTransaction = (transaction: any) => {
-    // TODO: Open edit modal
-    console.log("Edit transaction:", transaction);
+    setEditingTransaction(transaction);
+    setIsEditModalOpen(true);
   };
 
-  const handleDuplicateTransaction = (transaction: any) => {
-    // TODO: Duplicate transaction
-    console.log("Duplicate transaction:", transaction);
+  const handleDuplicateTransaction = async (transaction: any) => {
+    try {
+      // Create a new transaction based on the existing one
+      const duplicatePayload = {
+        amount: transaction.amount,
+        type: transaction.type,
+        accountId: transaction.accountId,
+        category: transaction.category,
+        subCategory: transaction.subCategory,
+        description: transaction.description ? `${transaction.description} (Copy)` : "(Copy)",
+        date: new Date().toISOString(), // Set to current date
+        paymentMethod: transaction.paymentMethod,
+      };
+
+      const res = await apiFetch("/api/transactions", {
+        method: "POST",
+        body: JSON.stringify(duplicatePayload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to duplicate transaction");
+      }
+
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["tx"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+    } catch (err) {
+      console.error("Error duplicating transaction:", err);
+    }
   };
 
   const scrollToTop = () => {
@@ -370,6 +399,18 @@ export function EnhancedTransactionList() {
         onClearSelection={handleClearSelection}
         transactions={transactions}
       />
+
+      {/* Edit Transaction Modal */}
+      {editingTransaction && (
+        <EnhancedEditModal
+          transaction={editingTransaction}
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingTransaction(null);
+          }}
+        />
+      )}
     </div>
   );
 }

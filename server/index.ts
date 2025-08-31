@@ -19,12 +19,18 @@ export function createServer() {
   app.use(cors({ origin, credentials: true }));
   app.use(express.json({ limit: "5mb" }));
   app.use(express.urlencoded({ extended: true }));
+  
   // Webhook must be public (no auth)
   app.use("/api/webhook", webhookRouter);
-  // Apply Clerk only to API routes (excluding webhook) to avoid interfering with Vite asset requests
+  
+  // Apply Clerk middleware to all API routes (excluding webhook)
+  // This MUST be applied before any routes that use getAuth
   app.use("/api", clerk);
 
-  // Health
+  // Connect to MongoDB
+  connectDB().catch(console.error);
+
+  // Health check route
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
@@ -32,7 +38,7 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  // API routes
+  // API routes - these must come after clerk middleware
   app.use("/api/accounts", accountsRouter);
   app.use("/api/transactions", transactionsRouter);
   app.use("/api/budgets", budgetsRouter);

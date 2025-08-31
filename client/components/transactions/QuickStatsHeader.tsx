@@ -77,6 +77,10 @@ export function QuickStatsHeader({
       if (!res.ok) throw new Error("Failed to fetch transactions");
       return res.json();
     },
+    // Disable caching to ensure fresh data on each render
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   // Calculate stats

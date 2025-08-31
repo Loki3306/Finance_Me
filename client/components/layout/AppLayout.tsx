@@ -26,9 +26,14 @@ import { Bell, Home, Layers, PiggyBank, Settings, Wallet } from "lucide-react";
 export default function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDark, setIsDark] = useState(() =>
-    document.documentElement.classList.contains("dark"),
-  );
+  const [isDark, setIsDark] = useState(() => {
+    // Check localStorage first, then fallback to document class
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme !== null) {
+      return storedTheme === 'dark';
+    }
+    return document.documentElement.classList.contains("dark");
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -39,17 +44,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         const btn = document.getElementById("ff-fab");
         (btn as HTMLButtonElement | null)?.click();
       }
-      if (key === "a") navigate("/accounts");
-      if (key === "b") navigate("/budgets");
-      if (key === "g") navigate("/goals");
+      // Navigation shortcuts removed
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [navigate]);
 
   useEffect(() => {
-    if (isDark) document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem('theme', 'light');
+    }
   }, [isDark]);
 
   const menu = useMemo(
