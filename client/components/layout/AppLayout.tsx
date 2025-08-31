@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserButton } from "@clerk/clerk-react";
 import { Bell, Home, Layers, PiggyBank, Settings, Wallet } from "lucide-react";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -49,7 +50,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const menu = useMemo(
     () => [
-      { to: "/", label: "Dashboard", icon: Home },
+      { to: "/dashboard", label: "Dashboard", icon: Home },
       { to: "/accounts", label: "Accounts", icon: Wallet },
       { to: "/transactions", label: "Transactions", icon: Layers },
       { to: "/budgets", label: "Budgets", icon: PiggyBank },
@@ -94,9 +95,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <span className="h-2.5 w-2.5 rounded-full bg-foreground/70" />
               {isDark ? "Dark" : "Light"}
             </Button>
-            <Avatar className="h-8 w-8">
-              <AvatarFallback>LG</AvatarFallback>
-            </Avatar>
+            <UserButton afterSignOutUrl="/sign-in" />
           </div>
         </SidebarFooter>
         <SidebarRail />
