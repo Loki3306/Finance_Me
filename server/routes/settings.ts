@@ -49,6 +49,19 @@ router.post("/export", async (req, res) => {
   res.json(doc || {});
 });
 
+router.get("/stats", async (req, res) => {
+  await connectDB();
+  const userId = getUserId(req);
+  const { Account } = await import("../models/account");
+  const { Transaction } = await import("../models/transaction");
+  const { Goal } = await import("../models/goal");
+  res.json({
+    accountsCount: await Account.countDocuments({ userId, deletedAt: null }),
+    transactionsCount: await Transaction.countDocuments({ userId, isDeleted: false }),
+    goalsCount: await Goal.countDocuments({ userId }),
+  });
+});
+
 router.delete("/reset", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
