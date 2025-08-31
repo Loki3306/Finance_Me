@@ -15,7 +15,7 @@ export function QuickStats() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm text-muted-foreground">{s.label}</div>
-              <div className="mt-1 text-2xl font-bold">${s.value.toLocaleString()}</div>
+              <div className="mt-1 text-2xl font-bold">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(s.value)}</div>
             </div>
             <s.icon className={`size-6 ${s.color}`} />
           </div>
