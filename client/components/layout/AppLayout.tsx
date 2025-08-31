@@ -30,14 +30,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "t") {
+      const key = (e.key || "").toLowerCase();
+      if (!key) return;
+      if (key === "t") {
         e.preventDefault();
         const btn = document.getElementById("ff-fab");
         (btn as HTMLButtonElement | null)?.click();
       }
-      if (e.key.toLowerCase() === "a") navigate("/accounts");
-      if (e.key.toLowerCase() === "b") navigate("/budgets");
-      if (e.key.toLowerCase() === "g") navigate("/goals");
+      if (key === "a") navigate("/accounts");
+      if (key === "b") navigate("/budgets");
+      if (key === "g") navigate("/goals");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
