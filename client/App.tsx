@@ -18,9 +18,56 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route
+            path="/"
+            element={
+              <AppLayout>
+                <Index />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/accounts"
+            element={
+              <AppLayout>
+                <Accounts />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/transactions"
+            element={
+              <AppLayout>
+                <Transactions />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/budgets"
+            element={
+              <AppLayout>
+                <Budgets />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/goals"
+            element={
+              <AppLayout>
+                <Goals />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <AppLayout>
+                <Settings />
+              </AppLayout>
+            }
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<AppLayout><NotFound /></AppLayout>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
