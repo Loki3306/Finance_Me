@@ -9,6 +9,7 @@ import budgetsRouter from "./routes/budgets";
 import goalsRouter from "./routes/goals";
 import settingsRouter from "./routes/settings";
 import { clerk } from "./middleware/auth";
+import webhookRouter from "./routes/webhook";
 
 export function createServer() {
   const app = express();
