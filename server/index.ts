@@ -2,22 +2,41 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import { connectDB } from "./db";
+import accountsRouter from "./routes/accounts";
+import transactionsRouter from "./routes/transactions";
+import budgetsRouter from "./routes/budgets";
+import goalsRouter from "./routes/goals";
+import settingsRouter from "./routes/settings";
+import { clerk } from "./middleware/auth";
 
 export function createServer() {
   const app = express();
 
   // Middleware
-  app.use(cors());
-  app.use(express.json());
+  const origin = process.env.CORS_ORIGIN || "*";
+  app.use(cors({ origin, credentials: true }));
+  app.use(express.json({ limit: "5mb" }));
   app.use(express.urlencoded({ extended: true }));
+  app.use(clerk);
 
-  // Example API routes
+  // DB
+  connectDB().catch((e) => console.error("Mongo connect error", e));
+
+  // Health
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
   });
 
   app.get("/api/demo", handleDemo);
+
+  // API routes
+  app.use("/api/accounts", accountsRouter);
+  app.use("/api/transactions", transactionsRouter);
+  app.use("/api/budgets", budgetsRouter);
+  app.use("/api/goals", goalsRouter);
+  app.use("/api/settings", settingsRouter);
 
   return app;
 }
