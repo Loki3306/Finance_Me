@@ -45,7 +45,7 @@ export function SpendingChart() {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={active && active !== entry.name ? 0.4 : 1} />
               ))}
             </Pie>
-            <Tooltip formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]} />
+            <Tooltip formatter={(value: number, name: string) => [new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value as number), name]} />
           </PieChart>
         </ResponsiveContainer>
       </div>
