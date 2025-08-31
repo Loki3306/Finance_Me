@@ -2,7 +2,7 @@ import { NetWorthCard } from "@/components/dashboard/NetWorthCard";
 import { QuickStats } from "@/components/dashboard/QuickStats";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { SpendingChart } from "@/components/dashboard/SpendingChart";
-import { QuickAddModal } from "@/components/transactions/QuickAddModal";
+import { EnhancedQuickAddModal } from "@/components/transactions/EnhancedQuickAddModal";
 
 export default function Index() {
   return (
@@ -15,7 +15,7 @@ export default function Index() {
         <div className="lg:col-span-2"><SpendingChart /></div>
         <div><RecentActivity /></div>
       </section>
-      <QuickAddModal />
+      <EnhancedQuickAddModal />
     </div>
   );
 }
