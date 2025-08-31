@@ -1,7 +1,11 @@
 import { clerkMiddleware, getAuth } from "@clerk/express";
 import type { RequestHandler } from "express";
 
-const hasClerkEnv = Boolean(process.env.CLERK_SECRET_KEY && (process.env.CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY));
+const hasClerkEnv = Boolean(
+  process.env.CLERK_SECRET_KEY &&
+    (process.env.CLERK_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY),
+);
 
 export const clerk: RequestHandler = hasClerkEnv
   ? clerkMiddleware()

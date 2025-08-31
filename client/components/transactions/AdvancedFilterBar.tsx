@@ -31,7 +31,7 @@ import {
   CreditCard,
   Smartphone,
   Banknote,
-  SlidersHorizontal
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface FilterState {
@@ -55,156 +55,177 @@ interface AdvancedFilterBarProps {
 }
 
 const DATE_PRESETS = [
-  { label: 'Today', value: 'today' },
-  { label: 'Yesterday', value: 'yesterday' },
-  { label: 'Last 7 days', value: 'week' },
-  { label: 'Last 30 days', value: 'month' },
-  { label: 'Last 3 months', value: 'quarter' },
-  { label: 'Custom range', value: 'custom' }
+  { label: "Today", value: "today" },
+  { label: "Yesterday", value: "yesterday" },
+  { label: "Last 7 days", value: "week" },
+  { label: "Last 30 days", value: "month" },
+  { label: "Last 3 months", value: "quarter" },
+  { label: "Custom range", value: "custom" },
 ];
 
 const SORT_OPTIONS = [
-  { label: 'Date (Newest)', value: 'date_desc' },
-  { label: 'Date (Oldest)', value: 'date_asc' },
-  { label: 'Amount (High)', value: 'amount_desc' },
-  { label: 'Amount (Low)', value: 'amount_asc' },
-  { label: 'Category A-Z', value: 'category_asc' }
+  { label: "Date (Newest)", value: "date_desc" },
+  { label: "Date (Oldest)", value: "date_asc" },
+  { label: "Amount (High)", value: "amount_desc" },
+  { label: "Amount (Low)", value: "amount_asc" },
+  { label: "Category A-Z", value: "category_asc" },
 ];
 
 const TRANSACTION_TYPES = [
-  { label: 'Income', value: 'income', color: 'text-green-600' },
-  { label: 'Expense', value: 'expense', color: 'text-red-600' },
-  { label: 'Transfer', value: 'transfer', color: 'text-blue-600' }
+  { label: "Income", value: "income", color: "text-green-600" },
+  { label: "Expense", value: "expense", color: "text-red-600" },
+  { label: "Transfer", value: "transfer", color: "text-blue-600" },
 ];
 
 const COMMON_CATEGORIES = [
-  'Food & Dining', 'Transportation', 'Shopping', 'Utilities & Bills',
-  'Healthcare', 'Entertainment', 'Travel', 'Financial', 'Education',
-  'Family & Personal', 'Salary', 'Freelance Work', 'Business Income'
+  "Food & Dining",
+  "Transportation",
+  "Shopping",
+  "Utilities & Bills",
+  "Healthcare",
+  "Entertainment",
+  "Travel",
+  "Financial",
+  "Education",
+  "Family & Personal",
+  "Salary",
+  "Freelance Work",
+  "Business Income",
 ];
 
 const getAccountIcon = (type: string) => {
   switch (type?.toLowerCase()) {
-    case 'upi': return <Smartphone size={14} className="text-blue-600" />;
-    case 'credit_card': return <CreditCard size={14} className="text-purple-600" />;
-    case 'cash': return <Banknote size={14} className="text-green-600" />;
-    case 'bank': return <Wallet size={14} className="text-gray-600" />;
-    default: return <Wallet size={14} className="text-gray-600" />;
+    case "upi":
+      return <Smartphone size={14} className="text-blue-600" />;
+    case "credit_card":
+      return <CreditCard size={14} className="text-purple-600" />;
+    case "cash":
+      return <Banknote size={14} className="text-green-600" />;
+    case "bank":
+      return <Wallet size={14} className="text-gray-600" />;
+    default:
+      return <Wallet size={14} className="text-gray-600" />;
   }
 };
 
-export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: AdvancedFilterBarProps) {
+export function AdvancedFilterBar({
+  filters,
+  onFiltersChange,
+  onClearFilters,
+}: AdvancedFilterBarProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Load accounts for filter
   const { data: accounts = [] } = useQuery({
-    queryKey: ['accounts-filter'],
+    queryKey: ["accounts-filter"],
     queryFn: async () => {
-      const res = await apiFetch('/api/accounts');
-      if (!res.ok) throw new Error('Failed to fetch accounts');
+      const res = await apiFetch("/api/accounts");
+      if (!res.ok) throw new Error("Failed to fetch accounts");
       return res.json();
-    }
+    },
   });
 
   const getDateRange = (preset: string) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     switch (preset) {
-      case 'today':
+      case "today":
         return {
-          from: today.toISOString().split('T')[0],
-          to: today.toISOString().split('T')[0]
+          from: today.toISOString().split("T")[0],
+          to: today.toISOString().split("T")[0],
         };
-      case 'yesterday':
+      case "yesterday":
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
         return {
-          from: yesterday.toISOString().split('T')[0],
-          to: yesterday.toISOString().split('T')[0]
+          from: yesterday.toISOString().split("T")[0],
+          to: yesterday.toISOString().split("T")[0],
         };
-      case 'week':
+      case "week":
         const weekAgo = new Date(today);
         weekAgo.setDate(today.getDate() - 7);
         return {
-          from: weekAgo.toISOString().split('T')[0],
-          to: today.toISOString().split('T')[0]
+          from: weekAgo.toISOString().split("T")[0],
+          to: today.toISOString().split("T")[0],
         };
-      case 'month':
+      case "month":
         const monthAgo = new Date(today);
         monthAgo.setDate(today.getDate() - 30);
         return {
-          from: monthAgo.toISOString().split('T')[0],
-          to: today.toISOString().split('T')[0]
+          from: monthAgo.toISOString().split("T")[0],
+          to: today.toISOString().split("T")[0],
         };
-      case 'quarter':
+      case "quarter":
         const quarterAgo = new Date(today);
         quarterAgo.setDate(today.getDate() - 90);
         return {
-          from: quarterAgo.toISOString().split('T')[0],
-          to: today.toISOString().split('T')[0]
+          from: quarterAgo.toISOString().split("T")[0],
+          to: today.toISOString().split("T")[0],
         };
       default:
-        return { from: '', to: '' };
+        return { from: "", to: "" };
     }
   };
 
   const handleDatePresetChange = (preset: string) => {
-    if (preset === 'custom') {
+    if (preset === "custom") {
       onFiltersChange({
         ...filters,
-        dateRange: { ...filters.dateRange, preset, from: '', to: '' }
+        dateRange: { ...filters.dateRange, preset, from: "", to: "" },
       });
     } else {
       const { from, to } = getDateRange(preset);
       onFiltersChange({
         ...filters,
-        dateRange: { preset, from, to }
+        dateRange: { preset, from, to },
       });
     }
   };
 
   const toggleAccount = (accountId: string) => {
     const newAccounts = filters.accounts.includes(accountId)
-      ? filters.accounts.filter(id => id !== accountId)
+      ? filters.accounts.filter((id) => id !== accountId)
       : [...filters.accounts, accountId];
-    
+
     onFiltersChange({
       ...filters,
-      accounts: newAccounts
+      accounts: newAccounts,
     });
   };
 
   const toggleCategory = (category: string) => {
     const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter(cat => cat !== category)
+      ? filters.categories.filter((cat) => cat !== category)
       : [...filters.categories, category];
-    
+
     onFiltersChange({
       ...filters,
-      categories: newCategories
+      categories: newCategories,
     });
   };
 
   const toggleType = (type: string) => {
     const newTypes = filters.types.includes(type)
-      ? filters.types.filter(t => t !== type)
+      ? filters.types.filter((t) => t !== type)
       : [...filters.types, type];
-    
+
     onFiltersChange({
       ...filters,
-      types: newTypes
+      types: newTypes,
     });
   };
 
   const hasActiveFilters = () => {
-    return filters.search || 
-           filters.dateRange.preset !== '' ||
-           filters.accounts.length > 0 ||
-           filters.categories.length > 0 ||
-           filters.types.length > 0 ||
-           filters.amountRange[0] > 0 ||
-           filters.amountRange[1] < 100000;
+    return (
+      filters.search ||
+      filters.dateRange.preset !== "" ||
+      filters.accounts.length > 0 ||
+      filters.categories.length > 0 ||
+      filters.types.length > 0 ||
+      filters.amountRange[0] > 0 ||
+      filters.amountRange[1] < 100000
+    );
   };
 
   const getActiveFilterCount = () => {
@@ -224,16 +245,21 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
       <div className="flex flex-wrap items-center gap-3">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          />
           <Input
             placeholder="Search transactions, merchants, amounts..."
             value={filters.search}
-            onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, search: e.target.value })
+            }
             className="pl-10 pr-10"
           />
           {filters.search && (
             <button
-              onClick={() => onFiltersChange({ ...filters, search: '' })}
+              onClick={() => onFiltersChange({ ...filters, search: "" })}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <X size={16} />
@@ -251,7 +277,7 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
                 "px-3 py-1 text-sm rounded-md transition-all",
                 filters.types.includes(type.value)
                   ? "bg-primary text-primary-foreground"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800",
               )}
             >
               {type.label}
@@ -260,7 +286,12 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
         </div>
 
         {/* Sort Dropdown */}
-        <Select value={filters.sortBy} onValueChange={(value) => onFiltersChange({ ...filters, sortBy: value })}>
+        <Select
+          value={filters.sortBy}
+          onValueChange={(value) =>
+            onFiltersChange({ ...filters, sortBy: value })
+          }
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -279,7 +310,7 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
           onClick={() => setShowAdvanced(!showAdvanced)}
           className={cn(
             "flex items-center gap-2",
-            hasActiveFilters() && "bg-primary/10 border-primary"
+            hasActiveFilters() && "bg-primary/10 border-primary",
           )}
         >
           <Filter size={16} />
@@ -289,7 +320,10 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
               {getActiveFilterCount()}
             </Badge>
           )}
-          <ChevronDown size={16} className={cn("transition-transform", showAdvanced && "rotate-180")} />
+          <ChevronDown
+            size={16}
+            className={cn("transition-transform", showAdvanced && "rotate-180")}
+          />
         </Button>
 
         {/* Clear Filters */}
@@ -308,7 +342,10 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
             {/* Date Range Filter */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Date Range</Label>
-              <Select value={filters.dateRange.preset} onValueChange={handleDatePresetChange}>
+              <Select
+                value={filters.dateRange.preset}
+                onValueChange={handleDatePresetChange}
+              >
                 <SelectTrigger>
                   <Calendar size={16} />
                   <SelectValue placeholder="Select period" />
@@ -321,24 +358,31 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
                   ))}
                 </SelectContent>
               </Select>
-              
-              {filters.dateRange.preset === 'custom' && (
+
+              {filters.dateRange.preset === "custom" && (
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     type="date"
                     value={filters.dateRange.from}
-                    onChange={(e) => onFiltersChange({
-                      ...filters,
-                      dateRange: { ...filters.dateRange, from: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      onFiltersChange({
+                        ...filters,
+                        dateRange: {
+                          ...filters.dateRange,
+                          from: e.target.value,
+                        },
+                      })
+                    }
                   />
                   <Input
                     type="date"
                     value={filters.dateRange.to}
-                    onChange={(e) => onFiltersChange({
-                      ...filters,
-                      dateRange: { ...filters.dateRange, to: e.target.value }
-                    })}
+                    onChange={(e) =>
+                      onFiltersChange({
+                        ...filters,
+                        dateRange: { ...filters.dateRange, to: e.target.value },
+                      })
+                    }
                   />
                 </div>
               )}
@@ -350,10 +394,12 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
               <div className="space-y-3">
                 <Slider
                   value={filters.amountRange}
-                  onValueChange={(value: number[]) => onFiltersChange({
-                    ...filters,
-                    amountRange: [value[0], value[1]]
-                  })}
+                  onValueChange={(value: number[]) =>
+                    onFiltersChange({
+                      ...filters,
+                      amountRange: [value[0], value[1]],
+                    })
+                  }
                   max={100000}
                   min={0}
                   step={100}
@@ -372,23 +418,28 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-between">
-                    {filters.accounts.length > 0 
+                    {filters.accounts.length > 0
                       ? `${filters.accounts.length} selected`
-                      : "Select accounts"
-                    }
+                      : "Select accounts"}
                     <ChevronDown size={16} />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-2">
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {accounts.map((account: any) => (
-                      <div key={account._id} className="flex items-center space-x-2">
+                      <div
+                        key={account._id}
+                        className="flex items-center space-x-2"
+                      >
                         <Checkbox
                           id={account._id}
                           checked={filters.accounts.includes(account._id)}
                           onCheckedChange={() => toggleAccount(account._id)}
                         />
-                        <label htmlFor={account._id} className="flex items-center gap-2 text-sm cursor-pointer">
+                        <label
+                          htmlFor={account._id}
+                          className="flex items-center gap-2 text-sm cursor-pointer"
+                        >
                           {getAccountIcon(account.type)}
                           {account.name}
                           <Badge variant="outline" className="text-xs">
@@ -415,7 +466,7 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
                     "px-3 py-1 text-sm rounded-full border transition-all",
                     filters.categories.includes(category)
                       ? "bg-primary text-primary-foreground border-primary"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
                   )}
                 >
                   {category}
@@ -432,22 +483,38 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
           {filters.search && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Search: "{filters.search}"
-              <button onClick={() => onFiltersChange({ ...filters, search: '' })}>
+              <button
+                onClick={() => onFiltersChange({ ...filters, search: "" })}
+              >
                 <X size={12} />
               </button>
             </Badge>
           )}
           {filters.dateRange.preset && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              {DATE_PRESETS.find(p => p.value === filters.dateRange.preset)?.label}
-              <button onClick={() => onFiltersChange({ ...filters, dateRange: { preset: '', from: '', to: '' } })}>
+              {
+                DATE_PRESETS.find((p) => p.value === filters.dateRange.preset)
+                  ?.label
+              }
+              <button
+                onClick={() =>
+                  onFiltersChange({
+                    ...filters,
+                    dateRange: { preset: "", from: "", to: "" },
+                  })
+                }
+              >
                 <X size={12} />
               </button>
             </Badge>
           )}
           {filters.types.map((type) => (
-            <Badge key={type} variant="secondary" className="flex items-center gap-1">
-              {TRANSACTION_TYPES.find(t => t.value === type)?.label}
+            <Badge
+              key={type}
+              variant="secondary"
+              className="flex items-center gap-1"
+            >
+              {TRANSACTION_TYPES.find((t) => t.value === type)?.label}
               <button onClick={() => toggleType(type)}>
                 <X size={12} />
               </button>
@@ -456,15 +523,20 @@ export function AdvancedFilterBar({ filters, onFiltersChange, onClearFilters }: 
           {filters.accounts.length > 0 && (
             <Badge variant="secondary" className="flex items-center gap-1">
               {filters.accounts.length} account(s)
-              <button onClick={() => onFiltersChange({ ...filters, accounts: [] })}>
+              <button
+                onClick={() => onFiltersChange({ ...filters, accounts: [] })}
+              >
                 <X size={12} />
               </button>
             </Badge>
           )}
           {filters.categories.length > 0 && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              {filters.categories.length} categor{filters.categories.length === 1 ? 'y' : 'ies'}
-              <button onClick={() => onFiltersChange({ ...filters, categories: [] })}>
+              {filters.categories.length} categor
+              {filters.categories.length === 1 ? "y" : "ies"}
+              <button
+                onClick={() => onFiltersChange({ ...filters, categories: [] })}
+              >
                 <X size={12} />
               </button>
             </Badge>

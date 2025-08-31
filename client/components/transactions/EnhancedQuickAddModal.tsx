@@ -1,59 +1,150 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { formatINR } from "@/lib/inr";
 import { useQueryClient } from "@tanstack/react-query";
-import { 
-  Calendar, 
-  Clock, 
-  CreditCard, 
-  Smartphone, 
-  Banknote, 
+import {
+  Calendar,
+  Clock,
+  CreditCard,
+  Smartphone,
+  Banknote,
   Wallet,
   ArrowUpRight,
   ArrowDownLeft,
   Search,
-  X
+  X,
 } from "lucide-react";
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000, 2000, 5000];
 
 const CATEGORIES = {
   income: [
-    "Salary", "Freelance Work", "Business Income", "Rental Income", 
-    "Investment Returns", "Family Support", "Bonus", "Refund/Cashback",
-    "Gift Received", "Side Hustle", "Miscellaneous Income"
+    "Salary",
+    "Freelance Work",
+    "Business Income",
+    "Rental Income",
+    "Investment Returns",
+    "Family Support",
+    "Bonus",
+    "Refund/Cashback",
+    "Gift Received",
+    "Side Hustle",
+    "Miscellaneous Income",
   ],
   expense: {
-    "Food & Dining": ["Groceries", "Restaurants", "Food Delivery", "Street Food", "Cafe/Tea", "Cooking Gas"],
-    "Transportation": ["Petrol/Diesel", "Auto/Rickshaw", "Taxi/Cab", "Bus/Metro", "Train/Flight", "Car Maintenance", "Parking"],
-    "Shopping": ["Clothing", "Electronics", "Books/Stationery", "Home Items", "Personal Care", "Gifts for Others"],
-    "Utilities & Bills": ["Electricity Bill", "Water Bill", "Gas Bill", "Internet", "Mobile Recharge", "DTH/Cable"],
-    "Healthcare": ["Doctor Consultation", "Medicines", "Hospital Bills", "Health Insurance", "Lab Tests"],
-    "Entertainment": ["Movies/Theater", "OTT Subscriptions", "Games", "Sports Events", "Books/Music", "Hobbies"],
-    "Travel": ["Hotels/Accommodation", "Flight/Train Tickets", "Local Transport", "Food & Dining", "Travel Shopping"],
-    "Financial": ["Loan EMI", "Credit Card Bill", "Insurance Premium", "Investment/SIP", "Bank Charges", "Tax Payment"],
-    "Education": ["School/College Fees", "Course Fees", "Books & Materials", "Coaching Classes", "Online Courses"],
-    "Family & Personal": ["Family Support", "Kids Expenses", "Pet Care", "Celebrations", "Religious Donations"],
-    "Miscellaneous": ["Custom Category"]
-  }
+    "Food & Dining": [
+      "Groceries",
+      "Restaurants",
+      "Food Delivery",
+      "Street Food",
+      "Cafe/Tea",
+      "Cooking Gas",
+    ],
+    Transportation: [
+      "Petrol/Diesel",
+      "Auto/Rickshaw",
+      "Taxi/Cab",
+      "Bus/Metro",
+      "Train/Flight",
+      "Car Maintenance",
+      "Parking",
+    ],
+    Shopping: [
+      "Clothing",
+      "Electronics",
+      "Books/Stationery",
+      "Home Items",
+      "Personal Care",
+      "Gifts for Others",
+    ],
+    "Utilities & Bills": [
+      "Electricity Bill",
+      "Water Bill",
+      "Gas Bill",
+      "Internet",
+      "Mobile Recharge",
+      "DTH/Cable",
+    ],
+    Healthcare: [
+      "Doctor Consultation",
+      "Medicines",
+      "Hospital Bills",
+      "Health Insurance",
+      "Lab Tests",
+    ],
+    Entertainment: [
+      "Movies/Theater",
+      "OTT Subscriptions",
+      "Games",
+      "Sports Events",
+      "Books/Music",
+      "Hobbies",
+    ],
+    Travel: [
+      "Hotels/Accommodation",
+      "Flight/Train Tickets",
+      "Local Transport",
+      "Food & Dining",
+      "Travel Shopping",
+    ],
+    Financial: [
+      "Loan EMI",
+      "Credit Card Bill",
+      "Insurance Premium",
+      "Investment/SIP",
+      "Bank Charges",
+      "Tax Payment",
+    ],
+    Education: [
+      "School/College Fees",
+      "Course Fees",
+      "Books & Materials",
+      "Coaching Classes",
+      "Online Courses",
+    ],
+    "Family & Personal": [
+      "Family Support",
+      "Kids Expenses",
+      "Pet Care",
+      "Celebrations",
+      "Religious Donations",
+    ],
+    Miscellaneous: ["Custom Category"],
+  },
 };
 
 const getAccountIcon = (type: string) => {
   switch (type?.toLowerCase()) {
-    case 'upi': return <Smartphone size={16} className="text-blue-600" />;
-    case 'credit_card': return <CreditCard size={16} className="text-purple-600" />;
-    case 'cash': return <Banknote size={16} className="text-green-600" />;
-    case 'bank': return <Wallet size={16} className="text-gray-600" />;
-    default: return <Wallet size={16} className="text-gray-600" />;
+    case "upi":
+      return <Smartphone size={16} className="text-blue-600" />;
+    case "credit_card":
+      return <CreditCard size={16} className="text-purple-600" />;
+    case "cash":
+      return <Banknote size={16} className="text-green-600" />;
+    case "bank":
+      return <Wallet size={16} className="text-gray-600" />;
+    default:
+      return <Wallet size={16} className="text-gray-600" />;
   }
 };
 
@@ -71,7 +162,7 @@ export function EnhancedQuickAddModal() {
   const [subCategory, setSubCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [time, setTime] = useState(new Date().toTimeString().slice(0, 5));
 
   // Data
@@ -94,14 +185,14 @@ export function EnhancedQuickAddModal() {
 
   const loadAccounts = async () => {
     try {
-      const res = await apiFetch('/api/accounts');
+      const res = await apiFetch("/api/accounts");
       if (res.ok) {
         const data = await res.json();
         setAccounts(data.filter((a: any) => !a.deletedAt));
         if (data.length > 0) setAccountId(data[0]._id);
       }
     } catch (err) {
-      console.error('Failed to load accounts:', err);
+      console.error("Failed to load accounts:", err);
     }
   };
 
@@ -112,7 +203,7 @@ export function EnhancedQuickAddModal() {
     setSubCategory("");
     setCustomCategory("");
     setDescription("");
-    setDate(new Date().toISOString().split('T')[0]);
+    setDate(new Date().toISOString().split("T")[0]);
     setTime(new Date().toTimeString().slice(0, 5));
     setError(null);
     setCategorySearch("");
@@ -145,7 +236,8 @@ export function EnhancedQuickAddModal() {
     setError(null);
 
     try {
-      const finalCategory = category === "Custom Category" ? customCategory : category;
+      const finalCategory =
+        category === "Custom Category" ? customCategory : category;
       const payload = {
         amount: Number(amount),
         type,
@@ -154,23 +246,24 @@ export function EnhancedQuickAddModal() {
         subCategory: subCategory || undefined,
         description: description || undefined,
         date: new Date(`${date}T${time}`).toISOString(),
-        paymentMethod: accounts.find(a => a._id === accountId)?.type || 'cash'
+        paymentMethod:
+          accounts.find((a) => a._id === accountId)?.type || "cash",
       };
 
-      const res = await apiFetch('/api/transactions', {
-        method: 'POST',
-        body: JSON.stringify(payload)
+      const res = await apiFetch("/api/transactions", {
+        method: "POST",
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to create transaction');
+        throw new Error(errorData.error || "Failed to create transaction");
       }
 
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      
+
       setOpen(false);
     } catch (err: any) {
       setError(err.message);
@@ -180,26 +273,28 @@ export function EnhancedQuickAddModal() {
   };
 
   const getFilteredCategories = () => {
-    const cats = type === 'income' ? CATEGORIES.income : Object.keys(CATEGORIES.expense);
+    const cats =
+      type === "income" ? CATEGORIES.income : Object.keys(CATEGORIES.expense);
     if (!categorySearch) return cats;
-    return cats.filter(cat => 
-      cat.toLowerCase().includes(categorySearch.toLowerCase())
+    return cats.filter((cat) =>
+      cat.toLowerCase().includes(categorySearch.toLowerCase()),
     );
   };
 
   const getSubCategories = () => {
-    if (type === 'income' || !category || category === "Custom Category") return [];
+    if (type === "income" || !category || category === "Custom Category")
+      return [];
     return (CATEGORIES.expense as any)[category] || [];
   };
 
-  const selectedAccount = accounts.find(a => a._id === accountId);
+  const selectedAccount = accounts.find((a) => a._id === accountId);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {type === 'income' ? (
+            {type === "income" ? (
               <ArrowUpRight className="text-green-600" />
             ) : (
               <ArrowDownLeft className="text-red-600" />
@@ -220,7 +315,9 @@ export function EnhancedQuickAddModal() {
           <div className="space-y-3">
             <Label className="text-sm font-medium">Amount</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg font-semibold text-gray-500">₹</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg font-semibold text-gray-500">
+                ₹
+              </span>
               <Input
                 type="number"
                 placeholder="0.00"
@@ -229,7 +326,7 @@ export function EnhancedQuickAddModal() {
                 className="pl-8 text-xl font-semibold h-14"
               />
             </div>
-            
+
             {/* Quick Amount Buttons */}
             <div className="flex flex-wrap gap-2">
               {QUICK_AMOUNTS.map((amt) => (
@@ -254,9 +351,9 @@ export function EnhancedQuickAddModal() {
                 onClick={() => setType("expense")}
                 className={cn(
                   "flex-1 py-2 px-4 rounded-md flex items-center justify-center gap-2 transition-all",
-                  type === "expense" 
-                    ? "bg-red-500 text-white shadow-sm" 
-                    : "text-gray-600 hover:bg-gray-200"
+                  type === "expense"
+                    ? "bg-red-500 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-200",
                 )}
               >
                 <ArrowDownLeft size={16} />
@@ -266,9 +363,9 @@ export function EnhancedQuickAddModal() {
                 onClick={() => setType("income")}
                 className={cn(
                   "flex-1 py-2 px-4 rounded-md flex items-center justify-center gap-2 transition-all",
-                  type === "income" 
-                    ? "bg-green-500 text-white shadow-sm" 
-                    : "text-gray-600 hover:bg-gray-200"
+                  type === "income"
+                    ? "bg-green-500 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-200",
                 )}
               >
                 <ArrowUpRight size={16} />
@@ -301,9 +398,13 @@ export function EnhancedQuickAddModal() {
             {selectedAccount && (
               <div className="text-sm text-gray-500">
                 Current balance: {formatINR(selectedAccount.balance)}
-                {type === 'expense' && Number(amount) > selectedAccount.balance && selectedAccount.type !== 'credit_card' && (
-                  <span className="text-red-500 ml-2">⚠️ Insufficient balance</span>
-                )}
+                {type === "expense" &&
+                  Number(amount) > selectedAccount.balance &&
+                  selectedAccount.type !== "credit_card" && (
+                    <span className="text-red-500 ml-2">
+                      ⚠️ Insufficient balance
+                    </span>
+                  )}
               </div>
             )}
           </div>
@@ -311,10 +412,13 @@ export function EnhancedQuickAddModal() {
           {/* Category Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Category</Label>
-            
+
             {/* Category Search */}
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
               <Input
                 placeholder="Search categories..."
                 value={categorySearch}
@@ -345,7 +449,7 @@ export function EnhancedQuickAddModal() {
                     "p-2 text-sm rounded-lg border text-left transition-all",
                     category === cat
                       ? "bg-primary text-primary-foreground border-primary"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
                   )}
                 >
                   {cat}
@@ -362,12 +466,14 @@ export function EnhancedQuickAddModal() {
                 {getSubCategories().map((subCat) => (
                   <button
                     key={subCat}
-                    onClick={() => setSubCategory(subCategory === subCat ? "" : subCat)}
+                    onClick={() =>
+                      setSubCategory(subCategory === subCat ? "" : subCat)
+                    }
                     className={cn(
                       "px-3 py-1 text-sm rounded-full border transition-all",
                       subCategory === subCat
                         ? "bg-primary text-primary-foreground border-primary"
-                        : "border-gray-200 hover:border-gray-300"
+                        : "border-gray-200 hover:border-gray-300",
                     )}
                   >
                     {subCat}
@@ -380,7 +486,9 @@ export function EnhancedQuickAddModal() {
           {/* Custom Category Input */}
           {category === "Custom Category" && (
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Custom Category Name</Label>
+              <Label className="text-sm font-medium">
+                Custom Category Name
+              </Label>
               <Input
                 placeholder="Enter category name"
                 value={customCategory}
@@ -394,7 +502,10 @@ export function EnhancedQuickAddModal() {
             <div className="space-y-2">
               <Label className="text-sm font-medium">Date</Label>
               <div className="relative">
-                <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Calendar
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <Input
                   type="date"
                   value={date}
@@ -406,7 +517,10 @@ export function EnhancedQuickAddModal() {
             <div className="space-y-2">
               <Label className="text-sm font-medium">Time</Label>
               <div className="relative">
-                <Clock size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Clock
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <Input
                   type="time"
                   value={time}
@@ -419,7 +533,9 @@ export function EnhancedQuickAddModal() {
 
           {/* Description */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Description (Optional)</Label>
+            <Label className="text-sm font-medium">
+              Description (Optional)
+            </Label>
             <Textarea
               placeholder="Add notes or merchant details..."
               value={description}
@@ -434,14 +550,14 @@ export function EnhancedQuickAddModal() {
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setOpen(false)}
               className="flex-1"
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={loading}
               className="flex-1 bg-primary text-primary-foreground"

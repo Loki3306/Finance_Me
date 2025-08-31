@@ -6,7 +6,11 @@ const AccountSchema = new Schema(
   {
     userId: { type: String, index: true, required: true },
     name: { type: String, required: true },
-    type: { type: String, enum: ["cash", "upi", "credit_card", "bank"], required: true },
+    type: {
+      type: String,
+      enum: ["cash", "upi", "credit_card", "bank"],
+      required: true,
+    },
     subType: { type: String },
     balance: { type: Number, required: true, default: 0 },
     creditLimit: { type: Number },
@@ -20,4 +24,5 @@ const AccountSchema = new Schema(
 
 AccountSchema.index({ userId: 1, type: 1 });
 
-export const Account = mongoose.models.Account || mongoose.model("Account", AccountSchema);
+export const Account =
+  mongoose.models.Account || mongoose.model("Account", AccountSchema);

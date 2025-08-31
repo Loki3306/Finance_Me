@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
       await User.findOneAndUpdate(
         { clerkId: data?.id },
         { clerkId: data?.id, email, firstName, lastName },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
     }
     res.status(200).json({ success: true });

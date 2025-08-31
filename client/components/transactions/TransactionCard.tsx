@@ -2,10 +2,10 @@ import { useState } from "react";
 import { formatINR } from "@/lib/inr";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  MoreVertical, 
-  Edit, 
-  Trash2, 
+import {
+  MoreVertical,
+  Edit,
+  Trash2,
   Copy,
   ArrowUpRight,
   ArrowDownLeft,
@@ -13,7 +13,7 @@ import {
   CreditCard,
   Smartphone,
   Banknote,
-  Wallet
+  Wallet,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,62 +35,69 @@ interface TransactionCardProps {
 
 const getTransactionIcon = (type: string) => {
   switch (type) {
-    case 'income': return <ArrowUpRight className="text-green-600" size={16} />;
-    case 'expense': return <ArrowDownLeft className="text-red-600" size={16} />;
-    case 'transfer': return <ArrowLeftRight className="text-blue-600" size={16} />;
-    default: return <ArrowDownLeft className="text-gray-600" size={16} />;
+    case "income":
+      return <ArrowUpRight className="text-green-600" size={16} />;
+    case "expense":
+      return <ArrowDownLeft className="text-red-600" size={16} />;
+    case "transfer":
+      return <ArrowLeftRight className="text-blue-600" size={16} />;
+    default:
+      return <ArrowDownLeft className="text-gray-600" size={16} />;
   }
 };
 
 const getPaymentMethodIcon = (method: string) => {
-  if (method?.toLowerCase().includes('upi')) return <Smartphone size={14} />;
-  if (method?.toLowerCase().includes('card')) return <CreditCard size={14} />;
-  if (method?.toLowerCase().includes('cash')) return <Banknote size={14} />;
+  if (method?.toLowerCase().includes("upi")) return <Smartphone size={14} />;
+  if (method?.toLowerCase().includes("card")) return <CreditCard size={14} />;
+  if (method?.toLowerCase().includes("cash")) return <Banknote size={14} />;
   return <Wallet size={14} />;
 };
 
 const getCategoryIcon = (category: string) => {
-  const cat = category?.toLowerCase() || '';
-  if (cat.includes('food')) return '🍽️';
-  if (cat.includes('transport')) return '🚗';
-  if (cat.includes('shopping')) return '🛍️';
-  if (cat.includes('salary')) return '💰';
-  if (cat.includes('rent')) return '🏠';
-  if (cat.includes('entertainment')) return '🎬';
-  if (cat.includes('healthcare')) return '🏥';
-  if (cat.includes('education')) return '📚';
-  return '💸';
+  const cat = category?.toLowerCase() || "";
+  if (cat.includes("food")) return "🍽️";
+  if (cat.includes("transport")) return "🚗";
+  if (cat.includes("shopping")) return "🛍️";
+  if (cat.includes("salary")) return "💰";
+  if (cat.includes("rent")) return "🏠";
+  if (cat.includes("entertainment")) return "🎬";
+  if (cat.includes("healthcare")) return "🏥";
+  if (cat.includes("education")) return "📚";
+  return "💸";
 };
 
-export function TransactionCard({ 
-  transaction, 
-  onEdit, 
-  onDelete, 
+export function TransactionCard({
+  transaction,
+  onEdit,
+  onDelete,
   onDuplicate,
   isSelected = false,
   onSelect,
-  showCheckbox = false
+  showCheckbox = false,
 }: TransactionCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
 
-  const borderColor = transaction.type === 'income' 
-    ? 'border-green-500' 
-    : transaction.type === 'expense' 
-    ? 'border-red-500' 
-    : 'border-blue-500';
+  const borderColor =
+    transaction.type === "income"
+      ? "border-green-500"
+      : transaction.type === "expense"
+        ? "border-red-500"
+        : "border-blue-500";
 
-  const amountColor = transaction.type === 'income' 
-    ? 'text-green-600' 
-    : transaction.type === 'expense' 
-    ? 'text-red-600' 
-    : 'text-blue-600';
+  const amountColor =
+    transaction.type === "income"
+      ? "text-green-600"
+      : transaction.type === "expense"
+        ? "text-red-600"
+        : "text-blue-600";
 
-  const amountPrefix = transaction.type === 'income' 
-    ? '+' 
-    : transaction.type === 'expense' 
-    ? '-' 
-    : '';
+  const amountPrefix =
+    transaction.type === "income"
+      ? "+"
+      : transaction.type === "expense"
+        ? "-"
+        : "";
 
   const relativeTime = (date: string) => {
     const now = new Date();
@@ -103,7 +110,7 @@ export function TransactionCard({
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return txDate.toLocaleDateString('en-IN');
+    return txDate.toLocaleDateString("en-IN");
   };
 
   return (
@@ -111,7 +118,7 @@ export function TransactionCard({
       className={cn(
         "group relative transition-all duration-200 ease-out",
         "transform hover:scale-[1.01] hover:shadow-lg",
-        isSelected && "ring-2 ring-primary ring-offset-2"
+        isSelected && "ring-2 ring-primary ring-offset-2",
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -131,13 +138,13 @@ export function TransactionCard({
         </div>
       )}
 
-      <div 
+      <div
         className={cn(
           "relative bg-white dark:bg-gray-800/50 rounded-xl border-l-4 p-4",
           "backdrop-blur-sm border border-gray-200 dark:border-gray-700",
           borderColor,
           "transition-all duration-200",
-          isHovered && "shadow-xl transform translate-y-[-2px]"
+          isHovered && "shadow-xl transform translate-y-[-2px]",
         )}
       >
         <div className="flex items-start gap-3">
@@ -154,7 +161,9 @@ export function TransactionCard({
           {/* Transaction Icon */}
           <div className="flex-shrink-0 relative">
             <div className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-700 grid place-items-center relative overflow-hidden">
-              <span className="text-xl">{getCategoryIcon(transaction.category)}</span>
+              <span className="text-xl">
+                {getCategoryIcon(transaction.category)}
+              </span>
               <div className="absolute bottom-0 right-0 transform translate-x-1 translate-y-1">
                 {getTransactionIcon(transaction.type)}
               </div>
@@ -180,7 +189,8 @@ export function TransactionCard({
                   )}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {relativeTime(transaction.date)} • {transaction.paymentMethod || 'Cash'}
+                  {relativeTime(transaction.date)} •{" "}
+                  {transaction.paymentMethod || "Cash"}
                 </div>
               </div>
 
@@ -188,7 +198,8 @@ export function TransactionCard({
               <div className="flex items-start gap-2 ml-3">
                 <div className="text-right">
                   <div className={cn("font-bold text-lg", amountColor)}>
-                    {amountPrefix}{formatINR(Math.abs(transaction.amount))}
+                    {amountPrefix}
+                    {formatINR(Math.abs(transaction.amount))}
                   </div>
                   <div className="text-xs text-gray-500">
                     Balance: {formatINR(transaction.accountBalance || 0)}
@@ -196,10 +207,12 @@ export function TransactionCard({
                 </div>
 
                 {/* Desktop Actions Menu */}
-                <div className={cn(
-                  "transition-opacity duration-200",
-                  isHovered ? "opacity-100" : "opacity-0"
-                )}>
+                <div
+                  className={cn(
+                    "transition-opacity duration-200",
+                    isHovered ? "opacity-100" : "opacity-0",
+                  )}
+                >
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -211,11 +224,13 @@ export function TransactionCard({
                         <Edit size={14} className="mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDuplicate?.(transaction)}>
+                      <DropdownMenuItem
+                        onClick={() => onDuplicate?.(transaction)}
+                      >
                         <Copy size={14} className="mr-2" />
                         Duplicate
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => onDelete?.(transaction._id)}
                         className="text-red-600"
                       >

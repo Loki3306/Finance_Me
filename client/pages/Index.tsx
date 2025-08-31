@@ -8,12 +8,20 @@ export default function Index() {
   return (
     <div className="space-y-6">
       <section className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2"><NetWorthCard /></div>
-        <div><QuickStats /></div>
+        <div className="lg:col-span-2">
+          <NetWorthCard />
+        </div>
+        <div>
+          <QuickStats />
+        </div>
       </section>
       <section className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2"><SpendingChart /></div>
-        <div><RecentActivity /></div>
+        <div className="lg:col-span-2">
+          <SpendingChart />
+        </div>
+        <div>
+          <RecentActivity />
+        </div>
       </section>
       <EnhancedQuickAddModal />
     </div>

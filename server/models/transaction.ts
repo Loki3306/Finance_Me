@@ -5,7 +5,11 @@ const TransactionSchema = new Schema(
     userId: { type: String, index: true, required: true },
     accountId: { type: Schema.Types.ObjectId, ref: "Account", required: true },
     amount: { type: Number, required: true },
-    type: { type: String, enum: ["income", "expense", "transfer"], required: true },
+    type: {
+      type: String,
+      enum: ["income", "expense", "transfer"],
+      required: true,
+    },
     category: { type: String, required: true },
     subCategory: { type: String },
     description: { type: String },
@@ -22,4 +26,6 @@ const TransactionSchema = new Schema(
 TransactionSchema.index({ userId: 1, date: -1 });
 TransactionSchema.index({ userId: 1, accountId: 1 });
 
-export const Transaction = mongoose.models.Transaction || mongoose.model("Transaction", TransactionSchema);
+export const Transaction =
+  mongoose.models.Transaction ||
+  mongoose.model("Transaction", TransactionSchema);

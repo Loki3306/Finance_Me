@@ -29,7 +29,8 @@ router.post("/", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: parsed.error.flatten() });
   const doc = await Goal.create({ ...parsed.data, userId });
   res.status(201).json(doc);
 });
@@ -38,8 +39,13 @@ router.put("/:id", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
   const parsed = schema.partial().safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-  const doc = await Goal.findOneAndUpdate({ _id: req.params.id, userId }, parsed.data, { new: true });
+  if (!parsed.success)
+    return res.status(400).json({ error: parsed.error.flatten() });
+  const doc = await Goal.findOneAndUpdate(
+    { _id: req.params.id, userId },
+    parsed.data,
+    { new: true },
+  );
   if (!doc) return res.status(404).json({ error: "Not found" });
   res.json(doc);
 });
@@ -47,7 +53,9 @@ router.put("/:id", async (req, res) => {
 router.post("/:id/contribute", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
-  const { amount, accountId } = z.object({ amount: z.number(), accountId: z.string().optional() }).parse(req.body);
+  const { amount, accountId } = z
+    .object({ amount: z.number(), accountId: z.string().optional() })
+    .parse(req.body);
   const goal = await Goal.findOne({ _id: req.params.id, userId });
   if (!goal) return res.status(404).json({ error: "Not found" });
   goal.currentAmount += amount;
@@ -60,7 +68,11 @@ router.post("/:id/contribute", async (req, res) => {
 router.put("/:id/complete", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
-  const doc = await Goal.findOneAndUpdate({ _id: req.params.id, userId }, { isCompleted: true }, { new: true });
+  const doc = await Goal.findOneAndUpdate(
+    { _id: req.params.id, userId },
+    { isCompleted: true },
+    { new: true },
+  );
   if (!doc) return res.status(404).json({ error: "Not found" });
   res.json(doc);
 });

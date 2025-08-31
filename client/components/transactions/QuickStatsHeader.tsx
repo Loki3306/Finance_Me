@@ -3,15 +3,15 @@ import { useState } from "react";
 import { formatINR } from "@/lib/inr";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  TrendingUp,
+  TrendingDown,
   DollarSign,
   Calendar,
   Clock,
   ArrowUpRight,
   ArrowDownLeft,
-  ArrowLeftRight
+  ArrowLeftRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,38 +21,41 @@ interface QuickStatsHeaderProps {
 }
 
 const PERIOD_OPTIONS = [
-  { value: 'today', label: 'Today', icon: <Clock size={14} /> },
-  { value: 'week', label: 'This Week', icon: <Calendar size={14} /> },
-  { value: 'month', label: 'This Month', icon: <Calendar size={14} /> },
-  { value: 'all', label: 'All Time', icon: <TrendingUp size={14} /> }
+  { value: "today", label: "Today", icon: <Clock size={14} /> },
+  { value: "week", label: "This Week", icon: <Calendar size={14} /> },
+  { value: "month", label: "This Month", icon: <Calendar size={14} /> },
+  { value: "all", label: "All Time", icon: <TrendingUp size={14} /> },
 ];
 
-export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: QuickStatsHeaderProps) {
+export function QuickStatsHeader({
+  onPeriodChange,
+  selectedPeriod = "today",
+}: QuickStatsHeaderProps) {
   const [animatingCard, setAnimatingCard] = useState<string | null>(null);
 
   // Get date range based on selected period
   const getDateRange = (period: string) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     switch (period) {
-      case 'today':
+      case "today":
         return {
           from: today.toISOString(),
-          to: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
+          to: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString(),
         };
-      case 'week':
+      case "week":
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - today.getDay());
         return {
           from: weekStart.toISOString(),
-          to: now.toISOString()
+          to: now.toISOString(),
         };
-      case 'month':
+      case "month":
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
         return {
           from: monthStart.toISOString(),
-          to: now.toISOString()
+          to: now.toISOString(),
         };
       default:
         return { from: undefined, to: undefined };
@@ -63,52 +66,55 @@ export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: Q
 
   // Fetch transactions for the selected period
   const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ['transactions-stats', selectedPeriod, from, to],
+    queryKey: ["transactions-stats", selectedPeriod, from, to],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (from) params.set('startDate', from);
-      if (to) params.set('endDate', to);
-      params.set('limit', '1000'); // Get all transactions for calculation
-      
+      if (from) params.set("startDate", from);
+      if (to) params.set("endDate", to);
+      params.set("limit", "1000"); // Get all transactions for calculation
+
       const res = await apiFetch(`/api/transactions?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch transactions');
+      if (!res.ok) throw new Error("Failed to fetch transactions");
       return res.json();
-    }
+    },
   });
 
   // Calculate stats
-  const stats = transactions.reduce((acc: any, tx: any) => {
-    const amount = Math.abs(tx.amount);
-    
-    if (tx.type === 'income') {
-      acc.income += amount;
-    } else if (tx.type === 'expense') {
-      acc.expense += amount;
-    }
-    
-    acc.total += 1;
-    return acc;
-  }, { income: 0, expense: 0, total: 0 });
+  const stats = transactions.reduce(
+    (acc: any, tx: any) => {
+      const amount = Math.abs(tx.amount);
+
+      if (tx.type === "income") {
+        acc.income += amount;
+      } else if (tx.type === "expense") {
+        acc.expense += amount;
+      }
+
+      acc.total += 1;
+      return acc;
+    },
+    { income: 0, expense: 0, total: 0 },
+  );
 
   const netAmount = stats.income - stats.expense;
   const isPositive = netAmount >= 0;
 
   const handlePeriodChange = (period: string) => {
     if (period !== selectedPeriod) {
-      setAnimatingCard('all');
+      setAnimatingCard("all");
       setTimeout(() => setAnimatingCard(null), 300);
       onPeriodChange?.(period);
     }
   };
 
-  const StatCard = ({ 
-    title, 
-    amount, 
-    icon, 
-    color, 
-    bgColor, 
+  const StatCard = ({
+    title,
+    amount,
+    icon,
+    color,
+    bgColor,
     textColor,
-    type 
+    type,
   }: {
     title: string;
     amount: number;
@@ -118,32 +124,36 @@ export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: Q
     textColor: string;
     type: string;
   }) => (
-    <div 
+    <div
       className={cn(
         "relative overflow-hidden rounded-xl border p-4 transition-all duration-300",
         "hover:shadow-lg hover:scale-105 transform",
         bgColor,
-        animatingCard === 'all' && "animate-pulse"
+        animatingCard === "all" && "animate-pulse",
       )}
     >
       <div className="flex items-center justify-between">
         <div>
           <p className={cn("text-sm font-medium", textColor)}>{title}</p>
           <p className={cn("text-2xl font-bold mt-1", textColor)}>
-            {type !== 'count' && (type === 'income' ? '+' : type === 'expense' ? '-' : '')}
-            {type === 'count' ? amount : formatINR(amount)}
+            {type !== "count" &&
+              (type === "income" ? "+" : type === "expense" ? "-" : "")}
+            {type === "count" ? amount : formatINR(amount)}
           </p>
-          {type === 'net' && (
-            <p className={cn("text-xs mt-1", isPositive ? "text-green-600" : "text-red-600")}>
+          {type === "net" && (
+            <p
+              className={cn(
+                "text-xs mt-1",
+                isPositive ? "text-green-600" : "text-red-600",
+              )}
+            >
               {isPositive ? "Surplus" : "Deficit"}
             </p>
           )}
         </div>
-        <div className={cn("p-2 rounded-lg", color)}>
-          {icon}
-        </div>
+        <div className={cn("p-2 rounded-lg", color)}>{icon}</div>
       </div>
-      
+
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform translate-x-full animate-shimmer" />
     </div>
@@ -162,7 +172,7 @@ export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: Q
               "hover:shadow-md transform hover:scale-105",
               selectedPeriod === option.value
                 ? "bg-primary text-primary-foreground shadow-lg"
-                : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/20"
+                : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/20",
             )}
           >
             {option.icon}
@@ -182,7 +192,7 @@ export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: Q
           textColor="text-green-900 dark:text-green-100"
           type="income"
         />
-        
+
         <StatCard
           title="Expense"
           amount={stats.expense}
@@ -192,23 +202,25 @@ export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: Q
           textColor="text-red-900 dark:text-red-100"
           type="expense"
         />
-        
+
         <StatCard
           title="Net Amount"
           amount={Math.abs(netAmount)}
           icon={<DollarSign size={20} className="text-white" />}
           color={isPositive ? "bg-blue-500" : "bg-orange-500"}
-          bgColor={isPositive 
-            ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800" 
-            : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
+          bgColor={
+            isPositive
+              ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+              : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
           }
-          textColor={isPositive 
-            ? "text-blue-900 dark:text-blue-100" 
-            : "text-orange-900 dark:text-orange-100"
+          textColor={
+            isPositive
+              ? "text-blue-900 dark:text-blue-100"
+              : "text-orange-900 dark:text-orange-100"
           }
           type="net"
         />
-        
+
         <StatCard
           title="Transactions"
           amount={stats.total}
@@ -224,7 +236,7 @@ export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: Q
       <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs">
-            {PERIOD_OPTIONS.find(p => p.value === selectedPeriod)?.label}
+            {PERIOD_OPTIONS.find((p) => p.value === selectedPeriod)?.label}
           </Badge>
           {isLoading && (
             <span className="flex items-center gap-1">
@@ -233,10 +245,11 @@ export function QuickStatsHeader({ onPeriodChange, selectedPeriod = 'today' }: Q
             </span>
           )}
         </div>
-        
+
         {stats.total > 0 && (
           <div className="text-xs">
-            Average per transaction: {formatINR((stats.income + stats.expense) / stats.total)}
+            Average per transaction:{" "}
+            {formatINR((stats.income + stats.expense) / stats.total)}
           </div>
         )}
       </div>

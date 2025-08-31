@@ -7,7 +7,7 @@ const UserSchema = new Schema(
     firstName: String,
     lastName: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = mongoose.models.User || mongoose.model("User", UserSchema);

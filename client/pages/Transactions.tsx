@@ -17,7 +17,9 @@ export default function Transactions() {
         <Button
           size="lg"
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
-          onClick={() => window.dispatchEvent(new CustomEvent("ff:openQuickAdd" as any))}
+          onClick={() =>
+            window.dispatchEvent(new CustomEvent("ff:openQuickAdd" as any))
+          }
         >
           <Plus size={20} className="mr-2" />
           Add Transaction

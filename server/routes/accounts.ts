@@ -34,10 +34,15 @@ router.post("/", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
   const parsed = accountSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: parsed.error.flatten() });
   const body = parsed.data;
-  if (body.type === "upi" && !body.upiId) return res.status(400).json({ error: "upiId required for UPI accounts" });
-  if (body.type === "credit_card" && body.creditLimit == null) return res.status(400).json({ error: "creditLimit required for credit cards" });
+  if (body.type === "upi" && !body.upiId)
+    return res.status(400).json({ error: "upiId required for UPI accounts" });
+  if (body.type === "credit_card" && body.creditLimit == null)
+    return res
+      .status(400)
+      .json({ error: "creditLimit required for credit cards" });
   const acc = await Account.create({ ...body, userId });
   res.status(201).json(acc);
 });
@@ -46,8 +51,13 @@ router.put("/:id", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
   const parsed = accountSchema.partial().safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-  const acc = await Account.findOneAndUpdate({ _id: req.params.id, userId }, parsed.data, { new: true });
+  if (!parsed.success)
+    return res.status(400).json({ error: parsed.error.flatten() });
+  const acc = await Account.findOneAndUpdate(
+    { _id: req.params.id, userId },
+    parsed.data,
+    { new: true },
+  );
   if (!acc) return res.status(404).json({ error: "Not found" });
   res.json(acc);
 });
@@ -55,7 +65,11 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
-  const acc = await Account.findOneAndUpdate({ _id: req.params.id, userId }, { deletedAt: new Date(), isActive: false }, { new: true });
+  const acc = await Account.findOneAndUpdate(
+    { _id: req.params.id, userId },
+    { deletedAt: new Date(), isActive: false },
+    { new: true },
+  );
   if (!acc) return res.status(404).json({ error: "Not found" });
   res.json({ success: true });
 });
@@ -64,7 +78,11 @@ router.put("/:id/balance", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
   const { amount } = z.object({ amount: z.number() }).parse(req.body);
-  const acc = await Account.findOneAndUpdate({ _id: req.params.id, userId }, { balance: amount }, { new: true });
+  const acc = await Account.findOneAndUpdate(
+    { _id: req.params.id, userId },
+    { balance: amount },
+    { new: true },
+  );
   if (!acc) return res.status(404).json({ error: "Not found" });
   res.json(acc);
 });
@@ -72,7 +90,13 @@ router.put("/:id/balance", async (req, res) => {
 router.get("/:id/transactions", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
-  const tx = await Transaction.find({ userId, accountId: req.params.id, isDeleted: false }).sort({ date: -1 }).limit(200);
+  const tx = await Transaction.find({
+    userId,
+    accountId: req.params.id,
+    isDeleted: false,
+  })
+    .sort({ date: -1 })
+    .limit(200);
   res.json(tx);
 });
 

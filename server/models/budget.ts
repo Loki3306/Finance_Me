@@ -7,7 +7,11 @@ const BudgetSchema = new Schema(
     category: { type: String, required: true },
     subCategory: { type: String },
     amount: { type: Number, required: true },
-    period: { type: String, enum: ["weekly", "monthly", "quarterly", "yearly"], required: true },
+    period: {
+      type: String,
+      enum: ["weekly", "monthly", "quarterly", "yearly"],
+      required: true,
+    },
     startDate: { type: Date },
     endDate: { type: Date },
     alertThresholds: {
@@ -24,4 +28,5 @@ const BudgetSchema = new Schema(
 
 BudgetSchema.index({ userId: 1, isActive: 1 });
 
-export const Budget = mongoose.models.Budget || mongoose.model("Budget", BudgetSchema);
+export const Budget =
+  mongoose.models.Budget || mongoose.model("Budget", BudgetSchema);

@@ -22,10 +22,17 @@ const prefSchema = z.object({
     fiscalYearStart: z.string().optional(),
     dashboardWidgets: z.array(z.string()).optional(),
     notifications: z
-      .object({ budgetAlerts: z.boolean(), goalReminders: z.boolean(), weeklyReports: z.boolean() })
+      .object({
+        budgetAlerts: z.boolean(),
+        goalReminders: z.boolean(),
+        weeklyReports: z.boolean(),
+      })
       .partial()
       .optional(),
-    privacy: z.object({ dataRetention: z.number(), shareAnalytics: z.boolean() }).partial().optional(),
+    privacy: z
+      .object({ dataRetention: z.number(), shareAnalytics: z.boolean() })
+      .partial()
+      .optional(),
   }),
 });
 
@@ -33,10 +40,18 @@ router.put("/preferences", async (req, res) => {
   await connectDB();
   const userId = getUserId(req);
   const parsed = prefSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: parsed.error.flatten() });
   const doc = await Settings.findOneAndUpdate(
     { userId },
-    { $set: Object.fromEntries(Object.entries(parsed.data.preferences).map(([k, v]) => ["preferences." + k, v])) },
+    {
+      $set: Object.fromEntries(
+        Object.entries(parsed.data.preferences).map(([k, v]) => [
+          "preferences." + k,
+          v,
+        ]),
+      ),
+    },
     { new: true, upsert: true },
   );
   res.json(doc);
@@ -57,7 +72,10 @@ router.get("/stats", async (req, res) => {
   const { Goal } = await import("../models/goal");
   res.json({
     accountsCount: await Account.countDocuments({ userId, deletedAt: null }),
-    transactionsCount: await Transaction.countDocuments({ userId, isDeleted: false }),
+    transactionsCount: await Transaction.countDocuments({
+      userId,
+      isDeleted: false,
+    }),
     goalsCount: await Goal.countDocuments({ userId }),
   });
 });

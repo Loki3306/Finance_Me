@@ -2,10 +2,28 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const recent = [
-  { id: 1, name: "Grocery Store", amount: -64.2, category: "Food", date: "Today" },
-  { id: 2, name: "Paycheck", amount: 2400, category: "Income", date: "Yesterday" },
+  {
+    id: 1,
+    name: "Grocery Store",
+    amount: -64.2,
+    category: "Food",
+    date: "Today",
+  },
+  {
+    id: 2,
+    name: "Paycheck",
+    amount: 2400,
+    category: "Income",
+    date: "Yesterday",
+  },
   { id: 3, name: "Uber", amount: -18.5, category: "Transport", date: "2d ago" },
-  { id: 4, name: "Coffee Shop", amount: -5.25, category: "Food", date: "2d ago" },
+  {
+    id: 4,
+    name: "Coffee Shop",
+    amount: -5.25,
+    category: "Food",
+    date: "2d ago",
+  },
 ];
 
 export function RecentActivity() {
@@ -23,9 +41,18 @@ export function RecentActivity() {
             <div className="flex-1">
               <div className="flex items-baseline justify-between">
                 <span className="font-medium">{t.name}</span>
-                <span className={cn("font-semibold", t.amount >= 0 ? "text-success" : "text-foreground")}>{t.amount >= 0 ? "+" : ""}${Math.abs(t.amount).toFixed(2)}</span>
+                <span
+                  className={cn(
+                    "font-semibold",
+                    t.amount >= 0 ? "text-success" : "text-foreground",
+                  )}
+                >
+                  {t.amount >= 0 ? "+" : ""}${Math.abs(t.amount).toFixed(2)}
+                </span>
               </div>
-              <div className="text-xs text-muted-foreground">{t.category} • {t.date}</div>
+              <div className="text-xs text-muted-foreground">
+                {t.category} • {t.date}
+              </div>
             </div>
           </li>
         ))}

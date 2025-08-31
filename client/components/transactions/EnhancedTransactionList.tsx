@@ -8,14 +8,7 @@ import { QuickStatsHeader } from "./QuickStatsHeader";
 import { AdvancedFilterBar } from "./AdvancedFilterBar";
 import { TransactionCard } from "./TransactionCard";
 import { BulkActionBar } from "./BulkActionBar";
-import { 
-  Grid, 
-  List, 
-  RefreshCw, 
-  ArrowUp,
-  Loader2,
-  Package
-} from "lucide-react";
+import { Grid, List, RefreshCw, ArrowUp, Loader2, Package } from "lucide-react";
 
 interface FilterState {
   search: string;
@@ -38,63 +31,74 @@ const defaultFilters: FilterState = {
   categories: [],
   types: [],
   amountRange: [0, 100000],
-  sortBy: "date_desc"
+  sortBy: "date_desc",
 };
 
 export function EnhancedTransactionList() {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [page, setPage] = useState(1);
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [statsPeriod, setStatsPeriod] = useState('today');
-  
+  const [statsPeriod, setStatsPeriod] = useState("today");
+
   const queryClient = useQueryClient();
   const limit = 20;
 
   // Build query parameters
   const queryParams = useMemo(() => {
     const params = new URLSearchParams();
-    
+
     if (filters.search) params.set("search", filters.search);
     if (filters.dateRange.from) params.set("startDate", filters.dateRange.from);
     if (filters.dateRange.to) params.set("endDate", filters.dateRange.to);
-    if (filters.accounts.length) params.set("accounts", filters.accounts.join(","));
-    if (filters.categories.length) params.set("categories", filters.categories.join(","));
+    if (filters.accounts.length)
+      params.set("accounts", filters.accounts.join(","));
+    if (filters.categories.length)
+      params.set("categories", filters.categories.join(","));
     if (filters.types.length) params.set("type", filters.types.join(","));
-    if (filters.amountRange[0] > 0) params.set("minAmount", filters.amountRange[0].toString());
-    if (filters.amountRange[1] < 100000) params.set("maxAmount", filters.amountRange[1].toString());
-    
+    if (filters.amountRange[0] > 0)
+      params.set("minAmount", filters.amountRange[0].toString());
+    if (filters.amountRange[1] < 100000)
+      params.set("maxAmount", filters.amountRange[1].toString());
+
     params.set("page", page.toString());
     params.set("limit", limit.toString());
     params.set("sort", filters.sortBy);
-    
+
     return params.toString();
   }, [filters, page]);
 
   // Fetch transactions
-  const { data: transactions = [], isLoading, isFetching, error } = useQuery({
+  const {
+    data: transactions = [],
+    isLoading,
+    isFetching,
+    error,
+  } = useQuery({
     queryKey: ["tx", queryParams],
     queryFn: async () => {
       const res = await apiFetch(`/api/transactions?${queryParams}`);
       if (!res.ok) throw new Error("Failed to fetch transactions");
       return res.json();
     },
-    staleTime: 30000 // 30 seconds
+    staleTime: 30000, // 30 seconds
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await apiFetch(`/api/transactions/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/transactions/${id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete transaction");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      setSelectedIds(prev => prev.filter(id => !prev.includes(id)));
-    }
+      setSelectedIds((prev) => prev.filter((id) => !prev.includes(id)));
+    },
   });
 
   // Handle scroll for showing scroll-to-top button
@@ -102,9 +106,9 @@ export function EnhancedTransactionList() {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400);
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Reset page when filters change
@@ -127,10 +131,8 @@ export function EnhancedTransactionList() {
   };
 
   const handleSelectTransaction = (id: string, selected: boolean) => {
-    setSelectedIds(prev => 
-      selected 
-        ? [...prev, id]
-        : prev.filter(selectedId => selectedId !== id)
+    setSelectedIds((prev) =>
+      selected ? [...prev, id] : prev.filter((selectedId) => selectedId !== id),
     );
   };
 
@@ -144,23 +146,26 @@ export function EnhancedTransactionList() {
 
   const handleEditTransaction = (transaction: any) => {
     // TODO: Open edit modal
-    console.log('Edit transaction:', transaction);
+    console.log("Edit transaction:", transaction);
   };
 
   const handleDuplicateTransaction = (transaction: any) => {
     // TODO: Duplicate transaction
-    console.log('Duplicate transaction:', transaction);
+    console.log("Duplicate transaction:", transaction);
   };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Loading skeleton component
   const LoadingSkeleton = () => (
     <div className="space-y-4">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border p-4 animate-pulse">
+        <div
+          key={i}
+          className="bg-white dark:bg-gray-800 rounded-xl border p-4 animate-pulse"
+        >
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
             <div className="flex-1">
@@ -188,12 +193,13 @@ export function EnhancedTransactionList() {
         No transactions found
       </h3>
       <p className="text-gray-500 dark:text-gray-400 mb-6">
-        {Object.values(filters).some(v => v && (Array.isArray(v) ? v.length > 0 : v))
+        {Object.values(filters).some(
+          (v) => v && (Array.isArray(v) ? v.length > 0 : v),
+        )
           ? "Try adjusting your filters to find transactions."
-          : "Get started by adding your first transaction."
-        }
+          : "Get started by adding your first transaction."}
       </p>
-      <Button 
+      <Button
         onClick={() => window.dispatchEvent(new CustomEvent("ff:openQuickAdd"))}
         className="bg-primary text-primary-foreground"
       >
@@ -205,7 +211,7 @@ export function EnhancedTransactionList() {
   return (
     <div className="space-y-6 pb-20">
       {/* Quick Stats Header */}
-      <QuickStatsHeader 
+      <QuickStatsHeader
         selectedPeriod={statsPeriod}
         onPeriodChange={setStatsPeriod}
       />
@@ -228,7 +234,7 @@ export function EnhancedTransactionList() {
               </Badge>
             )}
           </h2>
-          
+
           {isFetching && (
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Loader2 size={16} className="animate-spin" />
@@ -241,23 +247,23 @@ export function EnhancedTransactionList() {
           {/* View Mode Toggle */}
           <div className="border rounded-lg p-1 flex">
             <button
-              onClick={() => setViewMode('cards')}
+              onClick={() => setViewMode("cards")}
               className={cn(
                 "p-2 rounded transition-all",
-                viewMode === 'cards' 
+                viewMode === "cards"
                   ? "bg-primary text-primary-foreground"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800",
               )}
             >
               <Grid size={16} />
             </button>
             <button
-              onClick={() => setViewMode('table')}
+              onClick={() => setViewMode("table")}
               className={cn(
                 "p-2 rounded transition-all",
-                viewMode === 'table' 
+                viewMode === "table"
                   ? "bg-primary text-primary-foreground"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800",
               )}
             >
               <List size={16} />
@@ -290,16 +296,15 @@ export function EnhancedTransactionList() {
         ) : transactions.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className={cn(
-            "space-y-3",
-            "animate-in fade-in-50 duration-500"
-          )}>
+          <div
+            className={cn("space-y-3", "animate-in fade-in-50 duration-500")}
+          >
             {transactions.map((transaction: any, index: number) => (
               <div
                 key={transaction._id}
                 style={{
                   animationDelay: `${index * 50}ms`,
-                  animationFillMode: 'both'
+                  animationFillMode: "both",
                 }}
                 className="animate-in slide-in-from-bottom-4 duration-300"
               >
@@ -318,25 +323,27 @@ export function EnhancedTransactionList() {
         )}
 
         {/* Load More / Pagination */}
-        {!isLoading && transactions.length > 0 && transactions.length === limit && (
-          <div className="text-center mt-8">
-            <Button
-              variant="outline"
-              onClick={() => setPage(prev => prev + 1)}
-              disabled={isFetching}
-              className="animate-in fade-in-50 duration-300"
-            >
-              {isFetching ? (
-                <>
-                  <Loader2 size={16} className="animate-spin mr-2" />
-                  Loading...
-                </>
-              ) : (
-                "Load More"
-              )}
-            </Button>
-          </div>
-        )}
+        {!isLoading &&
+          transactions.length > 0 &&
+          transactions.length === limit && (
+            <div className="text-center mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={isFetching}
+                className="animate-in fade-in-50 duration-300"
+              >
+                {isFetching ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                    Loading...
+                  </>
+                ) : (
+                  "Load More"
+                )}
+              </Button>
+            </div>
+          )}
       </div>
 
       {/* Scroll to Top Button */}
@@ -348,7 +355,7 @@ export function EnhancedTransactionList() {
             "w-12 h-12 bg-primary text-primary-foreground rounded-full",
             "shadow-lg hover:shadow-xl transform hover:scale-110",
             "transition-all duration-200 ease-out",
-            "animate-in slide-in-from-bottom-6"
+            "animate-in slide-in-from-bottom-6",
           )}
         >
           <ArrowUp size={20} className="mx-auto" />

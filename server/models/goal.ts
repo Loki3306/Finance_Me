@@ -18,7 +18,11 @@ const GoalSchema = new Schema(
     currentAmount: { type: Number, default: 0 },
     targetDate: { type: Date },
     category: { type: String },
-    priority: { type: String, enum: ["high", "medium", "low"], default: "medium" },
+    priority: {
+      type: String,
+      enum: ["high", "medium", "low"],
+      default: "medium",
+    },
     imageUrl: { type: String },
     contributionHistory: [ContributionSchema],
     isCompleted: { type: Boolean, default: false },

@@ -23,7 +23,9 @@ import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
-const PUBLISHABLE_KEY = (import.meta as any).env.VITE_CLERK_PUBLISHABLE_KEY || (import.meta as any).env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY =
+  (import.meta as any).env.VITE_CLERK_PUBLISHABLE_KEY ||
+  (import.meta as any).env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -36,7 +38,14 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/sign-in" element={<SignInPage />} />
             <Route path="/sign-up" element={<SignUpPage />} />
-            <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
+            <Route
+              path="/onboarding"
+              element={
+                <RequireAuth>
+                  <OnboardingPage />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/dashboard"
               element={
@@ -98,7 +107,14 @@ const App = () => (
               }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<AppLayout><NotFound /></AppLayout>} />
+            <Route
+              path="*"
+              element={
+                <AppLayout>
+                  <NotFound />
+                </AppLayout>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </ClerkProvider>

@@ -26,7 +26,9 @@ import { Bell, Home, Layers, PiggyBank, Settings, Wallet } from "lucide-react";
 export default function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains("dark"),
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -64,21 +66,32 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" variant="inset" className="backdrop-blur bg-sidebar/60">
+      <Sidebar
+        collapsible="icon"
+        variant="inset"
+        className="backdrop-blur bg-sidebar/60"
+      >
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-1">
-            <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground grid place-items-center font-bold">FF</div>
+            <div className="h-8 w-8 rounded-lg bg-primary text-primary-foreground grid place-items-center font-bold">
+              FF
+            </div>
             <span className="font-semibold">FlowFinance</span>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel className="uppercase tracking-wide text-xs">Overview</SidebarGroupLabel>
+            <SidebarGroupLabel className="uppercase tracking-wide text-xs">
+              Overview
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {menu.map((m) => (
                   <SidebarMenuItem key={m.to}>
-                    <SidebarMenuButton asChild isActive={location.pathname === m.to}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location.pathname === m.to}
+                    >
                       <NavLink to={m.to} className="flex items-center gap-2">
                         <m.icon className="opacity-80" />
                         <span>{m.label}</span>
@@ -93,7 +106,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <SidebarSeparator />
         <SidebarFooter>
           <div className="flex items-center justify-between px-2">
-            <Button variant="ghost" size="sm" className="gap-2" onClick={() => setIsDark((v) => !v)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={() => setIsDark((v) => !v)}
+            >
               <span className="h-2.5 w-2.5 rounded-full bg-foreground/70" />
               {isDark ? "Dark" : "Light"}
             </Button>
@@ -111,12 +129,24 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <Button variant="ghost" size="icon" aria-label="Notifications">
                 <Bell className="size-5" />
               </Button>
-              <Button variant="default" size="sm" className="bg-primary text-primary-foreground hover:opacity-90" onClick={() => navigate("/accounts")}>Add Account</Button>
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-primary text-primary-foreground hover:opacity-90"
+                onClick={() => navigate("/accounts")}
+              >
+                Add Account
+              </Button>
             </div>
           </div>
         </header>
         <main className="relative p-4 md:p-6 lg:p-8">{children}</main>
-        <button id="ff-fab" className={cn("fixed bottom-5 right-5 h-14 w-14 rounded-full bg-success text-white shadow-lg transition hover:scale-105 active:scale-95", "backdrop-blur")}
+        <button
+          id="ff-fab"
+          className={cn(
+            "fixed bottom-5 right-5 h-14 w-14 rounded-full bg-success text-white shadow-lg transition hover:scale-105 active:scale-95",
+            "backdrop-blur",
+          )}
           onClick={() => {
             const evt = new CustomEvent("ff:openQuickAdd");
             window.dispatchEvent(evt);
