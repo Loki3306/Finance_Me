@@ -36,7 +36,6 @@ export function AccountGrid() {
       { v: "cash", label: "Cash" },
       { v: "upi", label: "UPI" },
       { v: "credit_card", label: "Credit" },
-      { v: "bank", label: "Bank" },
     ],
     [],
   );
