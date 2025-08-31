@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -28,9 +29,8 @@ export function AccountForm({ open, onOpenChange, initialValues }: { open: boole
 
   const mutation = useMutation({
     mutationFn: async (values: AccountFormValues) => {
-      const res = await fetch(initialValues?.id ? `/api/accounts/${initialValues.id}` : "/api/accounts", {
+      const res = await apiFetch(initialValues?.id ? `/api/accounts/${initialValues.id}` : "/api/accounts", {
         method: initialValues?.id ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
       if (!res.ok) throw new Error("Failed");
