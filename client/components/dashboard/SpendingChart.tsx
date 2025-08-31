@@ -58,7 +58,7 @@ export function SpendingChart() {
           >
             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
             <span className="text-sm">{d.name}</span>
-            <span className="ml-auto text-sm font-medium">${d.value}</span>
+            <span className="ml-auto text-sm font-medium">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(d.value)}</span>
           </button>
         ))}
       </div>
