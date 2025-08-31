@@ -18,10 +18,8 @@ export function createServer() {
   app.use(cors({ origin, credentials: true }));
   app.use(express.json({ limit: "5mb" }));
   app.use(express.urlencoded({ extended: true }));
-  app.use(clerk);
-
-  // DB
-  connectDB().catch((e) => console.error("Mongo connect error", e));
+  // Apply Clerk only to API routes to avoid interfering with Vite asset requests
+  app.use("/api", clerk);
 
   // Health
   app.get("/api/ping", (_req, res) => {
