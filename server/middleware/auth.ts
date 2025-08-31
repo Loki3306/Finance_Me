@@ -12,8 +12,7 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   const userId = auth?.userId;
   if (!userId) {
     if (process.env.NODE_ENV !== "production") {
-      // Dev fallback for local testing
-      (req as any).auth = { userId: "dev_user" };
+      (req as any).auth = { userId: "dev_user_123" };
       return next();
     }
     return res.status(401).json({ error: "Unauthorized" });
