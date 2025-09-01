@@ -43,8 +43,6 @@ router.get("/", async (req, res) => {
   const {
     account,
     accounts,
-    category,
-    categories,
     q,
     search,
     page = 1,
@@ -62,11 +60,6 @@ router.get("/", async (req, res) => {
     .split(",")
     .filter(Boolean);
   if (accList.length) filter.accountId = { $in: accList };
-  const catList = (categories || category || "")
-    .toString()
-    .split(",")
-    .filter(Boolean);
-  if (catList.length) filter.category = { $in: catList };
   if (type) filter.type = type;
   const fromVal = from || startDate;
   const toVal = to || endDate;
@@ -82,12 +75,12 @@ router.get("/", async (req, res) => {
       { category: { $regex: searchQ, $options: "i" } },
     ];
   const sortMap: Record<string, any> = {
-    date_desc: { date: -1 },
-    date_asc: { date: 1 },
+    date_desc: { createdAt: -1 }, // Sort by creation time, not transaction date
+    date_asc: { createdAt: 1 },
     amount_desc: { amount: -1 },
     amount_asc: { amount: 1 },
   };
-  const sortBy = sortMap[sort as string] || { date: -1 };
+  const sortBy = sortMap[sort as string] || { createdAt: -1 };
   const docs = await Transaction.find(filter)
     .sort(sortBy)
     .skip((Number(page) - 1) * Number(limit))
@@ -112,7 +105,7 @@ router.get("/recent", async (req, res) => {
   }
   
   const docs = await Transaction.find({ userId, isDeleted: false })
-    .sort({ date: -1 })
+    .sort({ createdAt: -1 }) // Sort by creation time, not transaction date
     .limit(20);
   res.json(docs);
 });
@@ -370,18 +363,37 @@ router.get("/search", async (req, res) => {
 async function recalcBalances(userId: string, accountIds: string[]) {
   const ids = [...new Set(accountIds)];
   for (const id of ids) {
+    // Get the account to access the initial balance
+    const account = await Account.findById(id);
+    if (!account) {
+      console.warn(`Account ${id} not found during balance recalculation`);
+      continue;
+    }
+
     const txs = await Transaction.find({
       userId,
       accountId: id,
       isDeleted: false,
     });
+    
     const income = txs
       .filter((t) => t.type === "income")
       .reduce((a, b) => a + b.amount, 0);
     const expense = txs
       .filter((t) => t.type === "expense")
       .reduce((a, b) => a + b.amount, 0);
-    await Account.findByIdAndUpdate(id, { balance: income - expense });
+    
+    // Calculate balance: initial balance + income - expense
+    const newBalance = (account.initialBalance || 0) + income - expense;
+    
+    console.log(`Recalculating balance for account ${id}:`, {
+      initialBalance: account.initialBalance || 0,
+      income,
+      expense,
+      newBalance
+    });
+    
+    await Account.findByIdAndUpdate(id, { balance: newBalance });
   }
 }
 

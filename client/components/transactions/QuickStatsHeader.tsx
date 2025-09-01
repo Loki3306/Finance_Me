@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { formatINR } from "@/lib/inr";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -12,8 +12,16 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   ArrowLeftRight,
+  Globe,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface QuickStatsHeaderProps {
   onPeriodChange?: (period: string) => void;
@@ -27,60 +35,165 @@ const PERIOD_OPTIONS = [
   { value: "all", label: "All Time", icon: <TrendingUp size={14} /> },
 ];
 
+const TIMEZONE_OPTIONS = [
+  { value: "Asia/Kolkata", label: "IST (India)", offset: "+05:30" },
+  { value: "UTC", label: "UTC", offset: "+00:00" },
+  { value: "America/New_York", label: "EST (New York)", offset: "-05:00" },
+  { value: "America/Los_Angeles", label: "PST (Los Angeles)", offset: "-08:00" },
+  { value: "Europe/London", label: "GMT (London)", offset: "+00:00" },
+  { value: "Asia/Tokyo", label: "JST (Tokyo)", offset: "+09:00" },
+  { value: "Australia/Sydney", label: "AEST (Sydney)", offset: "+10:00" },
+];
+
 export function QuickStatsHeader({
   onPeriodChange,
   selectedPeriod = "today",
 }: QuickStatsHeaderProps) {
   const [animatingCard, setAnimatingCard] = useState<string | null>(null);
+  const [selectedTimezone, setSelectedTimezone] = useState<string>("Asia/Kolkata"); // Default to IST
 
-  // Get date range based on selected period
-  const getDateRange = (period: string) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    switch (period) {
-      case "today":
-        return {
-          from: today.toISOString(),
-          to: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString(),
-        };
-      case "week":
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
-        return {
-          from: weekStart.toISOString(),
-          to: now.toISOString(),
-        };
-      case "month":
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        return {
-          from: monthStart.toISOString(),
-          to: now.toISOString(),
-        };
-      default:
-        return { from: undefined, to: undefined };
+  // Load timezone preference from localStorage on mount
+  useEffect(() => {
+    const savedTimezone = localStorage.getItem("finance-me-timezone");
+    if (savedTimezone && TIMEZONE_OPTIONS.some(tz => tz.value === savedTimezone)) {
+      setSelectedTimezone(savedTimezone);
     }
+  }, []);
+
+  // Save timezone preference to localStorage when changed
+  const handleTimezoneChange = (timezone: string) => {
+    setSelectedTimezone(timezone);
+    localStorage.setItem("finance-me-timezone", timezone);
   };
 
-  const { from, to } = getDateRange(selectedPeriod);
+  // Get date range based on selected period and timezone (memoized to prevent infinite loops)
+  const { from, to } = useMemo(() => {
+    console.log(`🔄 QuickStatsHeader: Recalculating date range for ${selectedPeriod} in ${selectedTimezone}`);
+    
+    const getDateRange = (period: string, timezone: string) => {
+      // Use a fixed reference time for consistent calculations
+      const now = new Date();
+      
+      // Helper function to convert date to specific timezone and get start/end of day
+      const getDateInTimezone = (date: Date, timezone: string, startOfDay = true) => {
+        try {
+          const dateInTz = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
+          const tzDate = new Date(date.getTime() + (dateInTz.getTime() - date.getTime()));
+          
+          if (startOfDay) {
+            tzDate.setHours(0, 0, 0, 0);
+          } else {
+            tzDate.setHours(23, 59, 59, 999);
+          }
+          
+          return tzDate;
+        } catch (error) {
+          console.warn(`Invalid timezone: ${timezone}, falling back to UTC`);
+          // Fallback to UTC if timezone is invalid
+          const utcDate = new Date(date);
+          if (startOfDay) {
+            utcDate.setUTCHours(0, 0, 0, 0);
+          } else {
+            utcDate.setUTCHours(23, 59, 59, 999);
+          }
+          return utcDate;
+        }
+      };
+      
+      switch (period) {
+        case "today":
+          const todayStart = getDateInTimezone(now, timezone, true);
+          const todayEnd = getDateInTimezone(now, timezone, false);
+          return {
+            from: todayStart.toISOString(),
+            to: todayEnd.toISOString(),
+          };
+        case "week":
+          try {
+            const weekDate = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
+            const dayOfWeek = weekDate.getDay();
+            const weekStart = new Date(weekDate);
+            weekStart.setDate(weekDate.getDate() - dayOfWeek);
+            const weekStartInTz = getDateInTimezone(weekStart, timezone, true);
+            
+            return {
+              from: weekStartInTz.toISOString(),
+              to: now.toISOString(),
+            };
+          } catch (error) {
+            console.warn(`Week calculation failed for timezone: ${timezone}`);
+            // Fallback calculation
+            const weekStart = new Date(now);
+            weekStart.setUTCDate(weekStart.getUTCDate() - weekStart.getUTCDay());
+            weekStart.setUTCHours(0, 0, 0, 0);
+            return {
+              from: weekStart.toISOString(),
+              to: now.toISOString(),
+            };
+          }
+        case "month":
+          try {
+            const monthDate = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
+            const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+            const monthStartInTz = getDateInTimezone(monthStart, timezone, true);
+            
+            return {
+              from: monthStartInTz.toISOString(),
+              to: now.toISOString(),
+            };
+          } catch (error) {
+            console.warn(`Month calculation failed for timezone: ${timezone}`);
+            // Fallback calculation
+            const monthStart = new Date(now);
+            monthStart.setUTCDate(1);
+            monthStart.setUTCHours(0, 0, 0, 0);
+            return {
+              from: monthStart.toISOString(),
+              to: now.toISOString(),
+            };
+          }
+        case "all":
+        default:
+          // For "all time", don't specify date range to get all transactions
+          return { from: null, to: null };
+      }
+    };
+
+    const result = getDateRange(selectedPeriod, selectedTimezone);
+    console.log(`📅 QuickStatsHeader: Date range calculated - from: ${result.from}, to: ${result.to}`);
+    return result;
+  }, [selectedPeriod, selectedTimezone]); // Only recalculate when period or timezone changes
 
   // Fetch transactions for the selected period
-  const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ["transactions-stats", selectedPeriod, from, to],
+  const { data: transactions = [], isLoading, error } = useQuery({
+    queryKey: ["transactions", "stats", selectedPeriod, selectedTimezone, from, to],
     queryFn: async () => {
       const params = new URLSearchParams();
+      // Only add date filters if they exist (for "all time", we don't want date filters)
       if (from) params.set("startDate", from);
       if (to) params.set("endDate", to);
       params.set("limit", "1000"); // Get all transactions for calculation
 
+      console.log(`🔍 QuickStatsHeader: Fetching transactions for ${selectedPeriod} in ${selectedTimezone}`);
+      console.log(`📅 Date range: ${from || 'no start date'} to ${to || 'no end date'}`);
+      console.log(`🔗 API URL: /api/transactions?${params.toString()}`);
+
       const res = await apiFetch(`/api/transactions?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch transactions");
-      return res.json();
+      if (!res.ok) {
+        console.error(`❌ QuickStatsHeader: API failed with status ${res.status}`);
+        throw new Error("Failed to fetch transactions");
+      }
+      
+      const data = await res.json();
+      console.log(`✅ QuickStatsHeader: Received ${data.length} transactions for ${selectedPeriod}`);
+      return data;
     },
-    // Disable caching to ensure fresh data on each render
-    refetchOnMount: true,
+    enabled: true, // Always enabled - let the API handle the filtering
+    staleTime: 0, // Always fresh data
+    gcTime: 5 * 60 * 1000, // 5 minutes (renamed from cacheTime)
     refetchOnWindowFocus: true,
-    staleTime: 0,
+    refetchOnMount: true, // Always refetch on mount
+    retry: 2, // Reduce retry attempts
   });
 
   // Calculate stats
@@ -165,24 +278,46 @@ export function QuickStatsHeader({
 
   return (
     <div className="space-y-4">
-      {/* Period Filter Chips */}
-      <div className="flex flex-wrap gap-2">
-        {PERIOD_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => handlePeriodChange(option.value)}
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-              "hover:shadow-md transform hover:scale-105",
-              selectedPeriod === option.value
-                ? "bg-primary text-primary-foreground shadow-lg"
-                : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/20",
-            )}
-          >
-            {option.icon}
-            {option.label}
-          </button>
-        ))}
+      {/* Period Filter Chips and Timezone Selector */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          {PERIOD_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handlePeriodChange(option.value)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                "hover:shadow-md transform hover:scale-105",
+                selectedPeriod === option.value
+                  ? "bg-primary text-primary-foreground shadow-lg"
+                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary/20",
+              )}
+            >
+              {option.icon}
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Timezone Selector */}
+        <div className="flex items-center gap-2">
+          <Globe size={16} className="text-gray-500" />
+          <Select value={selectedTimezone} onValueChange={handleTimezoneChange}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Select timezone" />
+            </SelectTrigger>
+            <SelectContent>
+              {TIMEZONE_OPTIONS.map((tz) => (
+                <SelectItem key={tz.value} value={tz.value}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{tz.label}</span>
+                    <span className="text-xs text-gray-500 ml-2">{tz.offset}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -242,10 +377,19 @@ export function QuickStatsHeader({
           <Badge variant="outline" className="text-xs">
             {PERIOD_OPTIONS.find((p) => p.value === selectedPeriod)?.label}
           </Badge>
+          <Badge variant="outline" className="text-xs">
+            {TIMEZONE_OPTIONS.find((tz) => tz.value === selectedTimezone)?.label}
+          </Badge>
           {isLoading && (
             <span className="flex items-center gap-1">
               <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" />
               Loading...
+            </span>
+          )}
+          {error && (
+            <span className="flex items-center gap-1 text-red-500">
+              <div className="w-3 h-3 bg-red-500 rounded-full" />
+              Error loading data
             </span>
           )}
         </div>

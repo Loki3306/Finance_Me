@@ -13,6 +13,7 @@ const AccountSchema = new Schema(
     },
     subType: { type: String },
     balance: { type: Number, required: true, default: 0 },
+    initialBalance: { type: Number, required: true, default: 0 }, // Track initial balance separately
     creditLimit: { type: Number },
     upiId: { type: String },
     paymentDueDate: { type: Number, min: 1, max: 31 },

@@ -50,7 +50,11 @@ router.post("/", async (req, res) => {
       return res
         .status(400)
         .json({ error: "creditLimit required for credit cards" });
-    const acc = await Account.create({ ...body, userId });
+    const acc = await Account.create({ 
+      ...body, 
+      userId,
+      initialBalance: body.balance // Store the initial balance separately
+    });
     res.status(201).json(acc);
   } catch (error) {
     console.error("Error creating account:", error);
@@ -100,12 +104,46 @@ router.put("/:id/balance", async (req, res) => {
     await connectDB();
     const userId = getUserId(req);
     const { amount } = z.object({ amount: z.number() }).parse(req.body);
+    
+    // When manually setting balance, we need to update the initial balance
+    // to reflect the new starting point, accounting for existing transactions
+    const account = await Account.findOne({ _id: req.params.id, userId });
+    if (!account) return res.status(404).json({ error: "Not found" });
+    
+    const txs = await Transaction.find({
+      userId,
+      accountId: req.params.id,
+      isDeleted: false,
+    });
+    
+    const income = txs
+      .filter((t) => t.type === "income")
+      .reduce((a, b) => a + b.amount, 0);
+    const expense = txs
+      .filter((t) => t.type === "expense")
+      .reduce((a, b) => a + b.amount, 0);
+    
+    // Calculate what the initial balance should be to achieve the desired balance
+    // desired_balance = initial_balance + income - expense
+    // therefore: initial_balance = desired_balance - income + expense
+    const newInitialBalance = amount - income + expense;
+    
     const acc = await Account.findOneAndUpdate(
       { _id: req.params.id, userId },
-      { balance: amount },
+      { 
+        balance: amount,
+        initialBalance: newInitialBalance
+      },
       { new: true },
     );
-    if (!acc) return res.status(404).json({ error: "Not found" });
+    
+    console.log(`Updated account ${req.params.id} balance:`, {
+      newBalance: amount,
+      newInitialBalance,
+      existingIncome: income,
+      existingExpense: expense
+    });
+    
     res.json(acc);
   } catch (error) {
     console.error("Error updating account balance:", error);

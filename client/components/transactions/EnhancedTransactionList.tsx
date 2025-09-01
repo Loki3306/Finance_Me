@@ -19,7 +19,6 @@ interface FilterState {
     preset: string;
   };
   accounts: string[];
-  categories: string[];
   types: string[];
   amountRange: [number, number];
   sortBy: string;
@@ -29,7 +28,6 @@ const defaultFilters: FilterState = {
   search: "",
   dateRange: { from: "", to: "", preset: "" },
   accounts: [],
-  categories: [],
   types: [],
   amountRange: [0, 100000],
   sortBy: "date_desc",
@@ -57,8 +55,6 @@ export function EnhancedTransactionList() {
     if (filters.dateRange.to) params.set("endDate", filters.dateRange.to);
     if (filters.accounts.length)
       params.set("accounts", filters.accounts.join(","));
-    if (filters.categories.length)
-      params.set("categories", filters.categories.join(","));
     if (filters.types.length) params.set("type", filters.types.join(","));
     if (filters.amountRange[0] > 0)
       params.set("minAmount", filters.amountRange[0].toString());
