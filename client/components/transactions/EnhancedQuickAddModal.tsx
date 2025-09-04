@@ -263,6 +263,7 @@ export function EnhancedQuickAddModal() {
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transactions change
 
       setOpen(false);
     } catch (err: any) {

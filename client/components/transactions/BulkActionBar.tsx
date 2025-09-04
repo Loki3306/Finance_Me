@@ -88,6 +88,7 @@ export function BulkActionBar({
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transactions are bulk deleted
 
       onClearSelection();
       setShowDeleteDialog(false);
@@ -115,6 +116,7 @@ export function BulkActionBar({
 
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ["tx"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transaction categories are bulk updated
 
       onClearSelection();
       setBulkCategory("");

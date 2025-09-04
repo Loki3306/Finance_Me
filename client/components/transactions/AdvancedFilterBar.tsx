@@ -42,7 +42,6 @@ interface FilterState {
     preset: string;
   };
   accounts: string[];
-  categories: string[];
   types: string[];
   amountRange: [number, number];
   sortBy: string;
@@ -64,33 +63,16 @@ const DATE_PRESETS = [
 ];
 
 const SORT_OPTIONS = [
-  { label: "Date (Newest)", value: "date_desc" },
-  { label: "Date (Oldest)", value: "date_asc" },
+  { label: "Newest First", value: "date_desc" },
+  { label: "Oldest First", value: "date_asc" },
   { label: "Amount (High)", value: "amount_desc" },
   { label: "Amount (Low)", value: "amount_asc" },
-  { label: "Category A-Z", value: "category_asc" },
 ];
 
 const TRANSACTION_TYPES = [
   { label: "Income", value: "income", color: "text-green-600" },
   { label: "Expense", value: "expense", color: "text-red-600" },
   { label: "Transfer", value: "transfer", color: "text-blue-600" },
-];
-
-const COMMON_CATEGORIES = [
-  "Food & Dining",
-  "Transportation",
-  "Shopping",
-  "Utilities & Bills",
-  "Healthcare",
-  "Entertainment",
-  "Travel",
-  "Financial",
-  "Education",
-  "Family & Personal",
-  "Salary",
-  "Freelance Work",
-  "Business Income",
 ];
 
 const getAccountIcon = (type: string) => {
@@ -194,17 +176,6 @@ export function AdvancedFilterBar({
     });
   };
 
-  const toggleCategory = (category: string) => {
-    const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter((cat) => cat !== category)
-      : [...filters.categories, category];
-
-    onFiltersChange({
-      ...filters,
-      categories: newCategories,
-    });
-  };
-
   const toggleType = (type: string) => {
     const newTypes = filters.types.includes(type)
       ? filters.types.filter((t) => t !== type)
@@ -221,7 +192,6 @@ export function AdvancedFilterBar({
       filters.search ||
       filters.dateRange.preset !== "" ||
       filters.accounts.length > 0 ||
-      filters.categories.length > 0 ||
       filters.types.length > 0 ||
       filters.amountRange[0] > 0 ||
       filters.amountRange[1] < 100000
@@ -233,7 +203,6 @@ export function AdvancedFilterBar({
     if (filters.search) count++;
     if (filters.dateRange.preset) count++;
     if (filters.accounts.length > 0) count++;
-    if (filters.categories.length > 0) count++;
     if (filters.types.length > 0) count++;
     if (filters.amountRange[0] > 0 || filters.amountRange[1] < 100000) count++;
     return count;
@@ -453,27 +422,6 @@ export function AdvancedFilterBar({
               </Popover>
             </div>
           </div>
-
-          {/* Categories Filter */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Categories</Label>
-            <div className="flex flex-wrap gap-2">
-              {COMMON_CATEGORIES.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => toggleCategory(category)}
-                  className={cn(
-                    "px-3 py-1 text-sm rounded-full border transition-all",
-                    filters.categories.includes(category)
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                  )}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
@@ -525,17 +473,6 @@ export function AdvancedFilterBar({
               {filters.accounts.length} account(s)
               <button
                 onClick={() => onFiltersChange({ ...filters, accounts: [] })}
-              >
-                <X size={12} />
-              </button>
-            </Badge>
-          )}
-          {filters.categories.length > 0 && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              {filters.categories.length} categor
-              {filters.categories.length === 1 ? "y" : "ies"}
-              <button
-                onClick={() => onFiltersChange({ ...filters, categories: [] })}
               >
                 <X size={12} />
               </button>

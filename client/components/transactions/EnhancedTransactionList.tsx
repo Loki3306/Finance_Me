@@ -19,7 +19,6 @@ interface FilterState {
     preset: string;
   };
   accounts: string[];
-  categories: string[];
   types: string[];
   amountRange: [number, number];
   sortBy: string;
@@ -29,7 +28,6 @@ const defaultFilters: FilterState = {
   search: "",
   dateRange: { from: "", to: "", preset: "" },
   accounts: [],
-  categories: [],
   types: [],
   amountRange: [0, 100000],
   sortBy: "date_desc",
@@ -57,8 +55,6 @@ export function EnhancedTransactionList() {
     if (filters.dateRange.to) params.set("endDate", filters.dateRange.to);
     if (filters.accounts.length)
       params.set("accounts", filters.accounts.join(","));
-    if (filters.categories.length)
-      params.set("categories", filters.categories.join(","));
     if (filters.types.length) params.set("type", filters.types.join(","));
     if (filters.amountRange[0] > 0)
       params.set("minAmount", filters.amountRange[0].toString());
@@ -100,6 +96,7 @@ export function EnhancedTransactionList() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transactions are deleted
       setSelectedIds((prev) => prev.filter((id) => !prev.includes(id)));
     },
   });
@@ -178,6 +175,7 @@ export function EnhancedTransactionList() {
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ["tx"] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Invalidate budgets when transactions are created
     } catch (err) {
       console.error("Error duplicating transaction:", err);
     }
@@ -303,7 +301,10 @@ export function EnhancedTransactionList() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ["tx"] })}
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ["tx"] });
+              queryClient.invalidateQueries({ queryKey: ["budgets"] }); // Also refresh budgets
+            }}
             disabled={isFetching}
           >
             <RefreshCw size={16} className={cn(isFetching && "animate-spin")} />
