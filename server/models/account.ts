@@ -12,8 +12,9 @@ const AccountSchema = new Schema(
       required: true,
     },
     subType: { type: String },
-    balance: { type: Number, required: true, default: 0 },
-    initialBalance: { type: Number, required: true, default: 0 }, // Track initial balance separately
+  // Remove balance and initialBalance for credit card accounts
+  balance: { type: Number, required: function() { return this.type !== "credit_card"; }, default: function() { return this.type !== "credit_card" ? 0 : undefined; } },
+  initialBalance: { type: Number, required: function() { return this.type !== "credit_card"; }, default: function() { return this.type !== "credit_card" ? 0 : undefined; } },
     creditLimit: { type: Number },
     upiId: { type: String },
     paymentDueDate: { type: Number, min: 1, max: 31 },

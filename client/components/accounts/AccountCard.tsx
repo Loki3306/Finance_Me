@@ -40,9 +40,11 @@ export function AccountCard({
           </Button>
         </div>
       </div>
-      <div className="mt-4 text-2xl font-bold">
-        {formatINR(account.balance)}
-      </div>
+      {account.type !== "credit_card" && (
+        <div className="mt-4 text-2xl font-bold">
+          {formatINR(account.balance)}
+        </div>
+      )}
     </Card>
   );
 }

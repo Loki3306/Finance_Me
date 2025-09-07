@@ -324,7 +324,20 @@ export function EnhancedTransactionList() {
         {isLoading ? (
           <LoadingSkeleton />
         ) : transactions.length === 0 ? (
-          <EmptyState />
+          <div className="text-center py-12">
+            <div className="mb-4">
+              <Package size={48} className="mx-auto text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              You haven't added any data yet. Start by creating a new entry.
+            </h3>
+            <Button
+              onClick={() => window.dispatchEvent(new CustomEvent("ff:openQuickAdd"))}
+              className="bg-primary text-primary-foreground"
+            >
+              Add Your First Transaction
+            </Button>
+          </div>
         ) : (
           <div
             className={cn("space-y-3", "animate-in fade-in-50 duration-500")}

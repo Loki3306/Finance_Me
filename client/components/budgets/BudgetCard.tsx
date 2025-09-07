@@ -65,7 +65,7 @@ export function BudgetCard({
         {/* Amount Display */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-2xl font-bold">{formatINR(total)}</div>
+            <div className="text-2xl font-bold">{total === 0 ? <span className="text-gray-400">-</span> : formatINR(total)}</div>
             <div className="text-xs text-muted-foreground">Budget Limit</div>
           </div>
           <div className={`flex items-center gap-1 ${getStatusColor()}`}>

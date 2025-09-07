@@ -11,11 +11,22 @@ const accountSchema = z.object({
   name: z.string().min(2),
   type: z.enum(["cash", "upi", "credit_card", "bank"]),
   subType: z.string().optional(),
-  balance: z.number(),
+  balance: z.number().optional(),
   creditLimit: z.number().optional(),
   upiId: z.string().optional(),
   paymentDueDate: z.number().min(1).max(31).optional(),
-});
+}).refine(
+  (data) => {
+    if (data.type !== "credit_card") {
+      return typeof data.balance === "number" && !isNaN(data.balance);
+    }
+    return true;
+  },
+  {
+    message: "Balance is required for non-credit card accounts",
+    path: ["balance"],
+  }
+);
 
 // Apply requireAuth to all routes
 router.use(requireAuth);
@@ -44,16 +55,16 @@ router.post("/", async (req, res) => {
     if (!parsed.success)
       return res.status(400).json({ error: parsed.error.flatten() });
     const body = parsed.data;
-    if (body.type === "upi" && !body.upiId)
-      return res.status(400).json({ error: "upiId required for UPI accounts" });
+  // upiId is no longer required for UPI accounts
     if (body.type === "credit_card" && body.creditLimit == null)
       return res
         .status(400)
         .json({ error: "creditLimit required for credit cards" });
+    // For credit cards, do not require balance or initialBalance
     const acc = await Account.create({ 
       ...body, 
       userId,
-      initialBalance: body.balance // Store the initial balance separately
+      ...(body.type === "credit_card" ? {} : { initialBalance: body.balance })
     });
     res.status(201).json(acc);
   } catch (error) {
