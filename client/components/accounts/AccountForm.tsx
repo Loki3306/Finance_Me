@@ -104,17 +104,31 @@ export function AccountForm({
             setSubmitAttempted(true);
             let values = form.getValues();
             console.log("AccountForm submit handler called", values);
-            // Remove balance for credit card accounts
+            
+            // Handle Credit Card account type
             if (values.type === "credit_card") {
+              // Remove balance for credit card accounts
               const { balance, ...rest } = values;
               values = rest;
+              
+              // Ensure creditLimit and paymentDueDate are included
+              if (!values.creditLimit || !values.paymentDueDate) {
+                setSubmitAttempted(true);
+                return;
+              }
             }
+            
             // Only submit if required fields are filled
             if (
               values.name &&
               values.type &&
               (values.type !== "credit_card" ? !isNaN(values.balance) : true)
             ) {
+              // Generate a unique ID for new accounts
+              if (!initialValues?.id) {
+                values.id = `acc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+              }
+              
               mutation.mutate(values);
             }
           }}
@@ -175,10 +189,13 @@ export function AccountForm({
                   type="number"
                   step="0.01"
                   {...form.register("creditLimit")}
-                  className={form.watch("creditLimit") < 0 ? "border-red-500 focus:border-red-500" : ""}
+                  className={form.watch("creditLimit") < 0 || (submitAttempted && !form.watch("creditLimit")) ? "border-red-500 focus:border-red-500" : ""}
                 />
                 {form.watch("creditLimit") < 0 && (
                   <div className="text-red-500 text-xs mt-1">Credit limit can't be negative</div>
+                )}
+                {submitAttempted && !form.watch("creditLimit") && (
+                  <div className="text-red-500 text-xs mt-1">Credit limit is required</div>
                 )}
                 <div className="mt-2">
                   <label className="text-xs mb-1 block">Quick Select:</label>
@@ -197,28 +214,37 @@ export function AccountForm({
                 </div>
               </div>
               <div>
-                <label className="text-sm mb-2 block">Payment Due Date</label>
+                <label className="text-sm mb-2 block">Payment Due Day (1-31)</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Input
                       readOnly
-                      value={form.watch("paymentDueDate") ? new Date(form.watch("paymentDueDate")).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "Select date"}
+                      value={form.watch("paymentDueDate") ? `Day ${form.watch("paymentDueDate")} of each month` : "Select date"}
                       placeholder="Select date"
-                      className="w-full cursor-pointer bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className={`w-full cursor-pointer bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${submitAttempted && !form.watch("paymentDueDate") ? "border-red-500 focus:border-red-500" : "border-gray-300"}`}
                     />
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 rounded-lg shadow-lg border border-gray-200 bg-white" align="start">
-                    <Calendar
-                      selected={form.watch("paymentDueDate") ? new Date(form.watch("paymentDueDate")) : undefined}
-                      onSelect={date => {
-                        if (date) {
-                          form.setValue("paymentDueDate", date.getTime());
-                        }
-                      }}
-                      className="rounded-lg border border-gray-200 bg-white shadow-md p-2"
-                    />
+                    <div className="p-2">
+                      <div className="text-sm font-medium mb-2 text-center">Select payment due day (1-31)</div>
+                      <div className="grid grid-cols-7 gap-1">
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => form.setValue("paymentDueDate", day)}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${form.watch("paymentDueDate") === day ? "bg-primary text-primary-foreground" : "hover:bg-gray-100"}`}
+                          >
+                            {day}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </PopoverContent>
                 </Popover>
+                {submitAttempted && !form.watch("paymentDueDate") && (
+                  <div className="text-red-500 text-xs mt-1">Payment due day is required</div>
+                )}
               </div>
             </div>
           )}
