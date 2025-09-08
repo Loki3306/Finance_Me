@@ -68,7 +68,7 @@ export function AccountGrid() {
             key={a._id}
             account={a}
             onEdit={(acc) => {
-              setEditing({ id: acc._id, ...acc });
+              setEditing(acc);
               setOpen(true);
             }}
             onDelete={(id) => del.mutate(id)}

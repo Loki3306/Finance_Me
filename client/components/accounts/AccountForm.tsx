@@ -56,10 +56,12 @@ export function AccountForm({
   });
 
   useEffect(() => {
-    if (open) {
+    if (initialValues) {
+      form.reset(initialValues);
+    } else {
       form.reset({ name: "", type: "cash", balance: NaN } as any);
     }
-  }, [open]);
+  }, [open, initialValues]);
 
   const mutation = useMutation({
     mutationFn: async (values: AccountFormValues) => {
@@ -87,7 +89,7 @@ export function AccountForm({
   return (
     <Dialog open={open} onOpenChange={(v) => {
       onOpenChange(v);
-      if (!v) {
+      if (!v && !initialValues) {
         form.reset({ name: "", type: "placeholder", balance: NaN } as any);
       }
     }}>
